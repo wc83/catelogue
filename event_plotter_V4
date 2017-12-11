@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov 27 15:09:18 2017
+
+@author: will
+"""
+
+#/home/will/Documents/python/event_plotter.py
+#William Carter
+
+h=8
+m=4
+s=17
+window=45
+#def event_plotter(h,m,s,window):
+import numpy as np
+import matplotlib.pyplot as plt
+from obspy.core import read
+from numpy import argmax
+    
+#%% read in and chose time for event
+seis = read('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/331a.mseed')
+seis.filter("lowpass" ,freq=5)
+
+start=seis[0].stats.starttime + h*60*60 + m*60 + s -2 # define start time (hours mins seconds) 
+end = start + window # define length of window in seconds
+#%% split and copy all HHZ and EHZ (Vertical) traces into matrix 'tr'
+tr=[]
+x=0  
+while x in range(0,len(seis),1): 
+    if seis[x].stats.channel in ['HHZ','EHZ']:
+        tr.append(seis[x])
+    x += 1
+trc=tr.copy()
+tr2=tr.copy()    
+        #%% Plot Waveform, Spectogram and amplitude spectra for vertical traces  
+cumpeak=0
+cumcf=0
+for t in range(0,len(tr),1):
+    
+    print('Plots for Station '+trc[t].stats.station+', Channel '+trc[t].stats.channel)
+
+    tr[t].plot(type='relative',color='b', starttime=start , endtime=end)
+
+    tr2[t].trim(starttime = start, endtime= end)
+    tr_data=tr2[t].data
+    m=np.mean(tr_data)
+    tr_data = tr_data-m
+    famp = abs(np.fft.rfft(tr_data))
+    X=np.linspace(0,(window/2),(window*50)+1)
+   
+    plt.plot(X,famp)
+    plt.xlabel('frequency [Hz]')
+    plt.ylabel('|amplitude|')
+    plt.title('Station '+trc[t].stats.station+', Channel '+trc[t].stats.channel)
+    plt.xlim([0, 10])
+
+    trc[t].trim(starttime = start, endtime= end) #cut out time window from full day      
+    trc[t].spectrogram(log=False, title= 'Station '+trc[t].stats.station+', Channel '+trc[t].stats.channel) 
+    
+    # peak f
+    peak= argmax(abs(famp))/100
+    print('Peak f = ',peak, 'Hz')   
+    cumpeak += peak
+    # Centre f
+    hal =sum(famp)/2
+    num=0
+    misf_i=1000000000
+    for x in range(0,len(famp),1):
+        n=famp[x]
+        num += n
+        misf = abs(num-hal)
+        if misf < misf_i:
+            misf_i = misf
+            cf=x/100
+    print('Centre frequency =', cf)
+    cumcf += cf
+    
+    gap=cf-peak
+    print('difference =', gap)
+print('\n')
+avcumcf=cumcf/len(tr)
+print('average centre f =', avcumcf)
+avcumpeak=cumpeak/len(tr)
+print('average peak f =', avcumpeak)
+avdiff=avcumcf-avcumpeak
+print('Average difference =', avdiff)
+    
+#file_info = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/info_test2.txt','w')
+#file_info.write(str(avcumcf))
+#file_info.write("\n")
+#file_info.write(str(avcumpeak))
+#file_info.write("\n") 
+#file_info.write(str(avdiff))
+#file_info.write("\n") 
+#file_info.write("\n") 
+#file_info.close()
+
