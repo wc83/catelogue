@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov 27 15:09:18 2017
+
+@author: will
+"""
+
+#/home/will/Documents/python/event_plotter.py
+#William Carter
+
+h=22
+m=52
+s=17
+window=45
+#def event_plotter(h,m,s,window):
+import numpy as np
+from obspy.core import read
+from numpy import argmax
+    
+#%% read in and chose time for event
+seis = read('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/335a.mseed')
+seis.filter("lowpass" ,freq=5)
+times = open('')
+start=seis[0].stats.starttime + h*60*60 + m*60 + s -2 # define start time (hours mins seconds) 
+end = start + window # define length of window in seconds
+#%% split and copy all HHZ and EHZ (Vertical) traces into matrix 'tr'
+ 
+cumpeak=0
+cumcf=0
+count=0
+
+for x in range(0,len(seis),1): 
+    
+    if seis[x].stats.channel in ['HHZ','EHZ']:
+        if seis[x].stats.endtime >= end:
+            if seis[x].stats.starttime <= start:
+                 
+            #seis[x].plot(type='relative',color='b', starttime=start , endtime=end)
+            #frequency info
+                tr2 = seis[x].slice(starttime = start, endtime= end)
+                tr_data=tr2.data
+                m=np.mean(tr_data)
+                tr_data = tr_data-m
+                famp = abs(np.fft.rfft(tr_data))
+            
+                # peak f
+                peak= argmax(abs(famp))/100
+            
+                # Centre f
+                hal =sum(famp)/2
+                num=0
+                misf_i=1000000000
+                for x in range(0,len(famp),1):
+                    n=famp[x]
+                    num += n
+                    misf = abs(num-hal)
+                    if misf < misf_i:
+                        misf_i = misf
+                        cf=x/100
+                #difference   
+                gap=cf-peak
+                                   
+                cumpeak += peak    
+                cumcf += cf
+                count += 1
+    
+
+            
+print('\n')
+avcumcf=cumcf/count
+print('average centre f =', avcumcf)
+avcumpeak=cumpeak/count
+print('average peak f =', avcumpeak)
+avdiff=avcumcf-avcumpeak
+print('Average difference =', avdiff)
+print(count)
+
+    
+file_info1 = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/info_centre.txt','a')
+file_info1.write(str(avcumcf))
+file_info1.write("\n")
+file_info1.close()
+file_info2 = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/info_peak.txt','a')
+file_info2.write(str(avcumpeak))
+file_info2.write("\n") 
+file_info2.close()
+file_info3 = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/info_diff.txt','a')
+file_info3.write(str(avdiff))
+file_info3.write("\n") 
+file_info3.close()
+  
