@@ -1,0 +1,173 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 23 15:31:27 2017
+@author: will
+"""
+
+from obspy.core import read
+from obspy.signal.cross_correlation import xcorr
+import glob
+import time
+import obspy
+import numpy as np
+from numpy import argmax
+   #%% constants    
+shift=100
+step=2
+crit=0.4
+crite=0.6
+#%% Read in sample waveforms with which to compare all waveforms      
+sample = read('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/361a.mseed')
+trace=sample[2]
+trace.detrend(type='demean')
+trace.filter("bandpass", freqmin=0.1,freqmax=10)
+
+#Earthquake
+start1= sample[2].stats.starttime + 20*60*60 + 26*60 + 24 #time window start - 2s before Pwave arrival
+trs1 = trace.slice(starttime = start1  , endtime= start1 + 40) #cut out sample waveform with same window length as chosen event
+trs1_e = obspy.signal.filter.envelope(trs1.data)
+
+#Explosion
+start2= sample[2].stats.starttime + 10*60*60 + 35*60 + 40 #time window start - 2s before Pwave arrival
+trs2 = trace.slice(starttime = start2  , endtime= start2 + 40) #cut out sample waveform with same window length as chosen event
+trs2_e = obspy.signal.filter.envelope(trs2.data)
+#%%
+T1= time.clock()
+#create empty stream for traces to be scanned
+stream = sample.copy()
+stream = stream.clear()
+#open files to write event times into
+file_quake = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/scan_equake_run1.txt','w')
+file_exp = open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/scan_explosion_run1.txt','w')
+file_unk =open('/media/will/8209dcbc-09a8-4e6e-a048-6e0d2f2d2407/catelogue/scan_unknown_run1.txt','w')
+#%% read in day of interest and select first vertical channel, open 
+for file in glob.glob('/SDS/2014/Z4/LB01/HHZ.D/*'):
+    seis = read(file)
+    tr =seis[0]
+    tr.detrend(type='demean')
+    tr.filter("bandpass", freqmin=0.1,freqmax=10)
+    stream.append(tr)
+stream.sort(keys=['starttime']) 
+print('files read in') 
+print(stream)
+#%% cross correlation in shifting time window and find well correlated waveforms
+# 
+for x in range(0,len(stream),1): 
+    begin = stream[x].stats.starttime
+    add=0
+    lastcorr=0          
+    for t in range(0,86360, step):
+        start = begin + t + add
+        if start > stream[x].stats.endtime - 40 :
+            file_exp.write("\n")
+            file_quake.write("\n")
+            file_unk.write("\n")
+            break
+        
+        trc = stream[x].slice(starttime = start  , endtime= start + 40)
+        trc.detrend(type='demean')
+        # only look for things above noise level 
+        
+        amp=abs(trc.max())
+    
+        if amp > 1300:
+
+            trc_data=trc.data
+            m=np.mean(trc_data)
+            trc_data = trc_data-m
+            famp = abs(np.fft.rfft(trc_data))
+            peak= argmax(abs(famp))/100
+            
+            hal =sum(famp)/2
+            num=0
+            misf_i=1000000000
+            for x in range(0,len(famp),1):
+                n=famp[x]
+                num += n
+                misf = abs(num-hal)
+                if misf < misf_i:
+                    misf_i = misf
+                    cf=x/100            
+            
+            
+            
+            
+            trc_e = obspy.signal.filter.envelope(trc.data)
+            corel=xcorr(trs1, trc, shift, full_xcorr=False )
+            
+            if corel[1] == 0.0 : # in the case of missing data - which will cause function to crash
+                break            
+            
+            
+            if cf < 1.2 :
+                if abs(corel[1]) > 0.2:
+                    if abs(trc.max()) > 10000:
+                        if abs(lastcorr) > abs(corel[1]):
+                            unkt = start - (corel[0]/100) +2
+                            file_unk.write(str(unkt))
+                            file_unk.write("\n")
+                            lastcorr=0
+                            add +=1
+                        else:
+                            lastcorr=corel[1]
+                else:
+                    corel1=xcorr(trs2_e, trc_e, shift, full_xcorr=False )
+                    if abs(corel1[1]) > crite:
+                        expt = start - (corel1[0]/100) +2
+                        file_exp.write(str(expt))
+                        file_exp.write("\n")
+                        add += 38
+                        lastcorr=0
+                    else:
+                        if abs(trc.max()) > 10000:
+                            if abs(lastcorr) > abs(corel1[1]):
+                                unkt = start - (corel1[0]/100) +2
+                                file_unk.write(str(unkt))
+                                file_unk.write("\n")
+                                lastcorr=0
+                                add +=1
+                            else:
+                                lastcorr=corel1[1]
+                
+            
+            else:
+                if corel[1] < 0.1:
+                    if abs(trc.max()) > 5000:
+                        if abs(lastcorr) > abs(corel[1]):
+                            unkt = start - (corel[0]/100) +2
+                            file_unk.write(str(unkt))
+                            file_unk.write("\n")
+                            lastcorr=0
+                            add +=1
+                        else:
+                            lastcorr=corel[1]
+                else:
+                    corel2=xcorr(trs1_e, trc_e, shift, full_xcorr=False )
+                    if abs(corel2[1]) > crit:
+                        eventt = start -(corel2[0]/100) +2
+                        file_quake.write(str(eventt))
+                        file_quake.write("\n")
+                        add += 38
+                        lastcorr=0
+                    else:
+                        if abs(trc.max()) > 2500:
+                            if abs(lastcorr) > abs(corel2[1]):
+                                unkt = start -(corel2[0]/100) +2
+                                file_unk.write(str(unkt))
+                                file_unk.write("\n")
+                                lastcorr=0
+                                add +=1
+                            else:
+                                lastcorr=corel2[1]
+                    
+                
+        else:
+            add += 38
+            lastcorr=0
+file_exp.close()
+file_quake.close()
+file_unk.close
+print("End of Scan")
+T2=time.clock()
+elapsed= T2-T1
+print('Time taken:', elapsed)
