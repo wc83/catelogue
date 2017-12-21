@@ -69,7 +69,7 @@ for x in range(0,len(stream),1):
         # only look for things above noise level 
         
         amp=abs(trc.max())
-        print(amp)
+        
         if amp > 1300:
             trc_data=trc.data
             m=np.mean(trc_data)
@@ -78,7 +78,7 @@ for x in range(0,len(stream),1):
             peak= argmax(abs(famp))/100
             trc_e = obspy.signal.filter.envelope(trc.data)
             corel=xcorr(trs1, trc, shift, full_xcorr=False )
-            print(start)
+            
             if corel[1] == 0.0 : # in the case of missing data - which will cause function to crash
                 break            
             
