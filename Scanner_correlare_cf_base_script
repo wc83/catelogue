@@ -1,0 +1,218 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon 12 13:31:27 2018
+@author: will
+"""
+
+from obspy.core import read
+from obspy.signal.cross_correlation import correlate
+import glob
+import time
+import obspy
+import numpy as np
+from numpy import argmax
+   #%% constants    
+shift=100
+step=2
+crit=0.4
+crite=0.6
+#%% Read in sample waveforms with which to compare all waveforms      
+sample = read('/Users/william/Documents/lb01/14_361z.mseed')
+trace=sample[0]
+trace.detrend(type='demean')
+trace.filter("bandpass", freqmin=0.1,freqmax=10)
+
+#Earthquake
+start1= sample[0].stats.starttime + 20*60*60 + 26*60 + 24 #time window start - 2s before Pwave arrival
+trs1 = trace.slice(starttime = start1  , endtime= start1 + 40) #cut out sample waveform with same window length as chosen event
+trs1_e = obspy.signal.filter.envelope(trs1.data)
+
+#Explosion
+start2= sample[0].stats.starttime + 10*60*60 + 35*60 + 40 #time window start - 2s before Pwave arrival
+trs2 = trace.slice(starttime = start2  , endtime= start2 + 40) #cut out sample waveform with same window length as chosen event
+trs2_e = obspy.signal.filter.envelope(trs2.data)
+#%%
+T1= time.clock()
+#create empty stream for traces to be scanned
+stream = sample.copy()
+stream = stream.clear()
+#open files to write event times into
+file_quake = open('/Users/william/Documents/scanner/correlate_scan_equake_run3.txt','w')
+file_exp = open('/Users/william/Documents/scanner/correlate_scan_explosion_run3.txt','w')
+file_unk =open('/Users/william/Documents/scanner/correlate_scan_unknown_run3.txt','w')
+#%% read in day of interest and select first vertical channel, open 
+for file in glob.glob('/Users/william/Documents/lb01/*'):
+    seis = read(file)
+    tr =seis[0]
+    tr.detrend(type='demean')
+    tr.filter("bandpass", freqmin=0.1,freqmax=10)
+    stream.append(tr)
+stream.sort(keys=['starttime']) 
+print('files read in') 
+print(stream)
+#%% cross correlation in shifting time window and find well correlated waveforms
+# 
+for x in range(0,len(stream),1): 
+    begin = stream[x].stats.starttime
+    add=0
+    lastcorr=0          
+    for t in range(0,86360, step):
+        start = begin + t + add
+        if start > stream[x].stats.endtime - 40 :
+#            print('new day')
+            file_exp.write("\n")
+            file_quake.write("\n")
+            file_unk.write("\n")
+            break
+        
+        trc = stream[x].slice(starttime = start  , endtime= start + 40)
+        trc.detrend(type='demean')
+        # only look for things above noise level 
+        amp=abs(trc.max())
+        
+        if amp > 2500:
+            
+            trc_data=trc.data
+            m=np.mean(trc_data)
+            trc_data = trc_data-m
+            famp = abs(np.fft.rfft(trc_data))
+            peak= argmax(abs(famp))/100
+            
+            window=40
+            hal= sum(famp)/2
+            num=0
+            misf_i=1000000000000
+            for t in range(0,len(famp),1):
+                n=famp[t]
+                num += n
+                misf = abs(num-hal)
+                if misf < misf_i:
+                    misf_i=misf
+                    cf=t/100
+                    
+            trc_e = obspy.signal.filter.envelope(trc.data)
+            #correlate normal time series between data and earthquake
+            corel=correlate(trs1, trc, shift, demean=True,normalize='naive',domain='time' )
+            
+            top=corel.argmax()
+            bot=corel.argmin()
+            top_v = corel[top]
+            bot_v = corel[bot]        
+            if abs(bot_v) > abs(top_v):
+                top_v=abs(bot_v)
+                top=100-bot #goes from -100 to +100 but list goes from 0 to 200
+                #print('data-eq:', top_v)
+            
+            if 0.0 in corel : # in the case of missing data - which will cause function to crash
+                break            
+            
+            # low frequency (search for explosions)
+            if cf < 1.2:      
+                if abs(top_v) > 0.2: #should be a low correlation between low frequency event and eq
+                    if abs(trc.max()) > 10000:
+                        if abs(lastcorr) > abs(top_v):
+                            unkt = start - (top/100) +2
+                            file_unk.write(str(unkt))
+                            file_unk.write("\n")
+                            lastcorr=0
+                            add +=1
+#                            print('unknown 1')
+#                            print(start)
+                        else:
+                            lastcorr=abs(top_v)
+                else:
+                    #correlate [envolopes] of data and explosion 
+                    corel1=correlate(trs2_e, trc_e, shift, demean=True,normalize='naive',domain='time' )
+                    
+                    top1=corel1.argmax()
+                    bot1=corel1.argmin()
+                    top1_v = corel1[top1]
+                    bot1_v = corel1[bot1]
+                    if abs(bot1_v) > abs(top1_v):
+                        top1_v=abs(bot1_v)
+                        top1=100-bot1 #goes from -100 to +100 but list goes from 0 to 200
+                       # print('envEXP-envData:', top1_v)
+                    
+                    if abs(top1_v) > crite:  
+                        expt = start - (top1/100) +2
+                        file_exp.write(str(expt))
+                        file_exp.write("\n")
+                        add += 38
+                        lastcorr=0
+#                        print('explosion found')
+#                        print(start)
+                    else:
+                        if abs(trc.max()) > 10000:
+                            if abs(lastcorr) > abs(top1_v):
+                                unkt = start - (top1/100) +2
+                                file_unk.write(str(unkt))
+                                file_unk.write("\n")
+                                lastcorr=0
+                                add +=1
+#                                print('unknown 2')
+#                                print(start)
+#                                print(top1_v)
+                            else:
+                                lastcorr=abs(top1_v)
+                
+            #high frequency
+            else:
+                #normal correlation between data and earthquake
+                if abs(top_v) < 0.2: #should correlate if same type of eq
+                    if abs(trc.max()) > 5000:
+                        if abs(lastcorr) > abs(top_v):
+                            unkt = start - (top) +2
+                            file_unk.write(str(unkt))
+                            file_unk.write("\n")
+                            lastcorr=0
+                            add +=1
+#                            print('unknown 3')
+#                            print(start)
+                        else:
+                            lastcorr=abs(top_v)
+                else:
+                    #correlation between data envelope and earthquake envelope
+                    corel2=correlate(trs1_e, trc_e, shift, demean=True,normalize='naive',domain='time'  )
+                    
+                    top2=corel2.argmax()
+                    bot2=corel2.argmin()
+                    top2_v = corel2[top2]
+                    bot2_v = corel2[bot2]
+                    if abs(bot2_v) > abs(top2_v):
+                        top2_v=abs(bot2_v) 
+                        top2=100-bot2 #goes from -100 to +100 but list goes from 0 to 200
+                       # print('envEQ-envData:', top2_v)
+                    
+                    if abs(top2_v) > crit:
+                        eventt = start -(top2/100) +2
+                        file_quake.write(str(eventt))
+                        file_quake.write("\n")
+                        add += 38
+                        lastcorr=0
+#                        print('EQ found')
+#                        print(start)
+#                        print(top2_v)
+                    else:
+                        if abs(trc.max()) > 2500:
+                            if abs(lastcorr) > abs(top2_v):
+                                unkt = start -(top2/100) +2
+                                file_unk.write(str(unkt))
+                                file_unk.write("\n")
+                                lastcorr=0
+                                add +=1
+#                                print('unknown 4')
+#                                print(start)
+                            else:
+                                lastcorr=abs(top2_v)
+                    
+                
+        else:
+            add += 38
+            lastcorr=0
+file_exp.close()
+file_quake.close()
+file_unk.close
+print("End of Scan")
+T2=time.clock()
+elapsed= T2-T1
+print('Time taken:', elapsed)
