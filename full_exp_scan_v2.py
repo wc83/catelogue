@@ -88,7 +88,7 @@ All_events=[]
 for p in range(0,len(stream1)):
     file_exp.write("\n")
     print('Day',p+1,'of',len(stream1))
-    Events_today=np.zeros(shape=(500,2))
+    Events_today=np.zeros(shape=(1,2))
     todays_event=[]
     Number_of_events_today=0
     find_count=0
@@ -154,6 +154,7 @@ for p in range(0,len(stream1)):
                                 Event_store.append(row)
                                 Events_today[find_count][0]=rt
                                 Events_today[find_count][1]=x
+                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 All_events.append(expt)
                                 find_count += 1
                                 Number_of_events_today += 1
@@ -219,6 +220,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -284,6 +286,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -349,6 +352,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -414,6 +418,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -479,6 +484,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -544,6 +550,7 @@ for p in range(0,len(stream1)):
                                     Event_store.append(row)
                                     Events_today[find_count][0]=rt
                                     Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
                                     All_events.append(expt)
                                     find_count += 1
                                     Number_of_events_today += 1
@@ -560,8 +567,8 @@ for p in range(0,len(stream1)):
 #%% collect information from each station for single day and save in arrays                
     Events_per_day.append(Number_of_events_today)
     Events_today.sort()
-    for l in range(0,len(Events_today)):
-        file_exp.write(str(Events_today[l]))
+    for l in range(0,len(todays_event)):
+        file_exp.write(str(todays_event[l]))
         file_exp.write("\n")
         
 #%%
