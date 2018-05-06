@@ -88,8 +88,10 @@ All_events=[]
 for p in range(0,len(stream1)):
     file_exp.write("\n")
     print('Day',p+1,'of',len(stream1))
-    Events_today=[]
+    Events_today=np.zeros(shape=(100,2))
+    todays_event=[]
     Number_of_events_today=0
+    find_count=0
     
     trace1=stream1[p]
     trace2=stream2[p]
@@ -134,6 +136,7 @@ for p in range(0,len(stream1)):
  
                 #            if the correlation is positive, exp found
                             if abs(top_v) > crite:
+                                
                                 expt = view_start - (top/100) +2
                                 rt=expt.timestamp	
                                 jd=expt.julday
@@ -146,9 +149,13 @@ for p in range(0,len(stream1)):
                                 ms=expt.microsecond
                                 row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                 
+                                
+                                todays_event.append(expt)
                                 Event_store.append(row)
-                                Events_today.append(expt)
+                                Events_today[find_count][0]=rt
+                                Events_today[find_count][1]=x
                                 All_events.append(expt)
+                                find_count += 1
                                 Number_of_events_today += 1
                                 
                                 add += 60-step               #skip 60s to avoid double catch
@@ -207,9 +214,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -268,9 +278,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -329,9 +342,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -390,9 +406,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -451,9 +470,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -512,9 +534,12 @@ for p in range(0,len(stream1)):
                                     ms=expt.microsecond
                                     row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
                                     
+                                    todays_event.append(expt)
                                     Event_store.append(row)
-                                    Events_today.append(expt)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
                                     All_events.append(expt)
+                                    find_count += 1
                                     Number_of_events_today += 1
                                     
                                 add += 60-step               #skip 60s to avoid double catch
@@ -549,59 +574,3 @@ file_exp.close()
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
