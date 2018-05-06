@@ -200,7 +200,8 @@ for p in range(0,len(stream1)):
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
                                 
-                                near,ind=find_nearest(All_events, expt)
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
@@ -264,7 +265,8 @@ for p in range(0,len(stream1)):
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
                                 
-                                near,ind=find_nearest(All_events, expt)
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
@@ -328,7 +330,8 @@ for p in range(0,len(stream1)):
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
                                 
-                                near,ind=find_nearest(All_events, expt)
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
@@ -392,7 +395,8 @@ for p in range(0,len(stream1)):
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
                                 
-                                near,ind=find_nearest(All_events, expt)
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
@@ -456,7 +460,8 @@ for p in range(0,len(stream1)):
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
                                 
-                                near,ind=find_nearest(All_events, expt)
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
@@ -519,8 +524,9 @@ for p in range(0,len(stream1)):
                 #            if the correlation is positive, exp found
                             if abs(top_v) > crite:
                                 expt = view_start - (top/100) +2
-                                
-                                near,ind=find_nearest(All_events, expt)
+
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:][0], rt)
                                 if abs(expt-near) > 100*15: #15s
       
                                     rt=expt.timestamp	
