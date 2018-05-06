@@ -88,7 +88,7 @@ All_events=[]
 for p in range(0,len(stream1)):
     file_exp.write("\n")
     print('Day',p+1,'of',len(stream1))
-    Events_today=np.zeros(shape=(100,2))
+    Events_today=np.zeros(shape=(500,2))
     todays_event=[]
     Number_of_events_today=0
     find_count=0
