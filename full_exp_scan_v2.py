@@ -202,8 +202,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
                                 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -268,8 +268,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
                                 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -334,8 +334,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
                                 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -400,8 +400,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
                                 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -466,8 +466,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
                                 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -532,8 +532,8 @@ for p in range(0,len(stream1)):
                                 expt = view_start - (top/100) +2
 
                                 rt=expt.timestamp	
-                                near,ind=find_nearest(Events_today[:][0], rt)
-                                if abs(rt-near) > 15: #15s
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
       
                                     rt=expt.timestamp	
                                     jd=expt.julday
@@ -566,7 +566,7 @@ for p in range(0,len(stream1)):
                 
 #%% collect information from each station for single day and save in arrays                
     Events_per_day.append(Number_of_events_today)
-    Events_today.sort()
+    todays_event.sort()
     for l in range(0,len(todays_event)):
         file_exp.write(str(todays_event[l]))
         file_exp.write("\n")
