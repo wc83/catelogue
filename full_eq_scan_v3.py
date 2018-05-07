@@ -76,11 +76,13 @@ stream6 = sample.copy()
 stream6 = stream6.clear()
 stream7 = sample.copy()
 stream7 = stream7.clear()
+stream8 = sample.copy()
+stream8 = stream8.clear()
 
 #%% Read in Each station
 for x in range(0,3):
     
-    seis1,seis2,seis3,seis4,seis5,seis6,seis7=get_LBz(x)
+    seis1,seis2,seis3,seis4,seis5,seis6,seis7,seis8=get_LBz(x)
 
     tr1=seis1[0]
     tr2=seis2[0]
@@ -89,6 +91,7 @@ for x in range(0,3):
     tr5=seis5[0]
     tr6=seis6[0]
     tr7=seis7[0]
+    tr8=seis8[0]
 
     stream1.append(tr1)
     stream2.append(tr2)
@@ -97,6 +100,7 @@ for x in range(0,3):
     stream5.append(tr5)
     stream6.append(tr6)
     stream7.append(tr7)
+    stream8.append(tr8)
    
 print('files read in') 
 
@@ -124,6 +128,7 @@ for t in range(0,len(stream1),1):
     trace5=stream5[t]
     trace6=stream6[t]
     trace7=stream7[t]
+    trace8=stream8[t]
  
     st1=trace1.data
     st2=trace2.data
@@ -132,6 +137,7 @@ for t in range(0,len(stream1),1):
     st5=trace5.data
     st6=trace6.data
     st7=trace7.data
+    st8=trace8.data
     
     cft1=recursive_sta_lta(st1, nsta, nlta)
     cft2=recursive_sta_lta(st2, nsta, nlta)
@@ -140,6 +146,7 @@ for t in range(0,len(stream1),1):
     cft5=recursive_sta_lta(st5, nsta, nlta)
     cft6=recursive_sta_lta(st6, nsta, nlta)
     cft7=recursive_sta_lta(st7, nsta, nlta)
+    cft8=recursive_sta_lta(st8, nsta, nlta)
                                    
 #    plot_trigger(trs2, cft2, trig_on, trig_off) 
     on_off_all=np.zeros(shape=(1,2))
@@ -151,6 +158,7 @@ for t in range(0,len(stream1),1):
     on_off5 = trigger_onset(cft5,trig_on,trig_off)
     on_off6 = trigger_onset(cft6,trig_on,trig_off)
     on_off7 = trigger_onset(cft7,trig_on,trig_off)
+    on_off8 = trigger_onset(cft8,trig_on,trig_off)
     
 #        #window endpoints
 #    if trace1.stats.npts > 8600000:
@@ -590,7 +598,68 @@ for t in range(0,len(stream1),1):
         except:
             print('find at edge of data')
             
+    #%% LB08 only events
+     
+    LB08_start=[]
+    LB08_end=[]                         
+    for q in range(0,len(on_off8)):
+        
+        value = on_off8[q,0]
+        near,ind=find_nearest(on_off_all[:,0], value)
 
+        if abs(value-near) > 100*15: #15s          
+
+            LB08_start.append(on_off8[q,0]/sr)
+            LB08_end.append(on_off8[q,1]/sr)
+
+    for x in range(0,len(LB08_start)):
+        tr = trace8.slice(starttime=start+(LB08_start[x]) , endtime=start+(LB08_end[x]))
+        tr.detrend(type='demean')
+        tr_len=tr.stats.endtime - tr.stats.starttime 
+        
+        #%% frequency info
+        try:
+            peak,cf,bwid,bwid25 = freq_info(tr.data,tr.stats.starttime,tr.stats.endtime)      
+
+        
+            amp=abs(tr.max())
+            whole = sum(abs(tr.data))
+            av_amp = whole/(100*tr_len)
+            amp_rat = amp/av_amp
+            # only look for things above noise level 
+            
+            if amp > 300:
+                if amp_rat < 18:
+                    if 4 < cf < 10 :  
+                        if 3 < peak < 15:
+                            if 3 < bwid < 14:
+    #                            tr.plot(type='relative',color='g')
+                                trs_e = obspy.signal.filter.envelope(tr.data)
+                                top_v,top,corell = corel(trc_e,trs_e,shift)
+                              
+                                top_v_eq,top_eq,corell_eq = corel(trc2_e,trs_e,shift)
+                                
+                                top_v_n,top_n,corell_n = corel(trc3_e,trs_e,shift)
+                           
+                                if abs(top_v) < crite:
+                                    if abs(top_v_n) > crite_n:
+                                        if abs(top_v_eq) > crite_eq:
+    #                                            print('EQ:')
+    #                                        print('cf',cf,'peak',peak,'bwid',bwid,'Xc',top_v_eq,'rat',amp_rat)
+    #                                        tr.plot(type='relative',color='g')#, starttime=start+(on_off[x,0]/sr)-10 , endtime=start+(on_off[x,1]/sr)+10)
+                                            event_day.append(tr.stats.starttime)
+                                            
+                                            on_off_all[event_count][0]=LB08_start[x]
+                                            on_off_all[event_count][1]=LB08_end[x]
+                                            event_count += 1
+                                            on_off_all = np.lib.pad(on_off_all, ((0,1),(0,0)), 'constant', constant_values=(0))
+
+#                                            print('lb03 event added')
+        except:
+            print('find at edge of data')
+            
+
+  
             
 #%%            
     event_day.sort()

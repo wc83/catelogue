@@ -51,10 +51,12 @@ stream6 = sample.copy()
 stream6 = stream6.clear()
 stream7 = sample.copy()
 stream7 = stream7.clear()
+stream8 = sample.copy()
+stream8 = stream8.clear()
 
 #%% Read in Each station
 for x in range(0,25):
-    seis1,seis2,seis3,seis4,seis5,seis6,seis7=get_LBz(x)
+    seis1,seis2,seis3,seis4,seis5,seis6,seis7,seis8=get_LBz(x)
 
     
     tr1=seis1[0]
@@ -64,7 +66,7 @@ for x in range(0,25):
     tr5=seis5[0]
     tr6=seis6[0]
     tr7=seis7[0]
-
+    tr8=seis8[0]
     
     stream1.append(tr1)
     stream2.append(tr2)
@@ -73,7 +75,7 @@ for x in range(0,25):
     stream5.append(tr5)
     stream6.append(tr6)
     stream7.append(tr7)
-
+    stream8.append(tr8)
     
 print('files read in') 
 
@@ -561,7 +563,72 @@ for p in range(0,len(stream1)):
                 add += 38
                 lastcorr=0 
                 
-   
+       #%% Station 8 scan  
+    if trace8.stats.npts > 210:
+        begin = trace8.stats.starttime
+        add=0
+        lastcorr=0         
+        dl=trace8.stats.endtime - trace8.stats.starttime
+            
+        for t in range(0,trace8.stats.npts, step):
+            view_start = begin + t + add
+            view_end = view_start + window
+            if view_start > trace7.stats.endtime - window :
+                break
+    
+            trc8 = trace8.slice(starttime = view_start  , endtime= view_end)
+            trc8.detrend(type='linear')
+            trc8.detrend(type='demean')
+            trc8.filter("bandpass", freqmin=fmin,freqmax=fmax)
+            # only look for things above noise level 
+            amp=abs(trc.max())
+            
+            if amp > 1600:       
+                peak8,cf8,bwid8,bwid258 = freq_info(trc8.data,trc8.stats.starttime,trc8.stats.endtime)      
+                if 0.75 < cf8 < 2.75: 
+                    if 0.2 < peak8 < 2.5:        
+                        if 0.2 < bwid8 < 3: 
+                                 #correlate between data and earthquake envelopes 
+                            trc8_e = obspy.signal.filter.envelope(trc8.data) 
+                            top_v,top,corell = corel(trs_e,trc8_e,shift)
+                            
+                            if 0.0 in corell : # in the case of missing data - which will cause function to crash
+                                break            
+ 
+                #            if the correlation is positive, exp found
+                            if abs(top_v) > crite:
+                                expt = view_start - (top/100) +2
+
+                                rt=expt.timestamp	
+                                near,ind=find_nearest(Events_today[:,0], rt)
+                                if abs(rt-near) > 60: #60s
+      
+                                    rt=expt.timestamp	
+                                    jd=expt.julday
+                                    yr=expt.year
+                                    mo=expt.month
+                                    da=expt.day
+                                    hr=expt.hour
+                                    mi=expt.minute
+                                    se=expt.second
+                                    ms=expt.microsecond
+                                    row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
+                                    
+                                    todays_event.append(expt)
+                                    Event_store.append(row)
+                                    Events_today[find_count][0]=rt
+                                    Events_today[find_count][1]=x
+                                    Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                    All_events.append(expt)
+                                    find_count += 1
+                                    Number_of_events_today += 1
+                                    
+                                add += 60-step               #skip 60s to avoid double catch
+
+            else:
+                add += 38
+                lastcorr=0 
+                
                   
                 
 #%% collect information from each station for single day and save in arrays                

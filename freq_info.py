@@ -27,7 +27,7 @@ def freq_info(tr,start,end):
     # median f 
     hal =sum(famp)/4 #half of the first half of the complete fft (ie. less than nq)
     num=0
-    misf_i=1000000000
+    misf_i=1000000000000
     for t in range(0,len(famp),1):
         n=famp[t]                  
         num += n

@@ -314,5 +314,46 @@ def get_LBz(day):
         st7.detrend(type='linear')
         st7.detrend(type='demean')
         st7[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
+        
+        #%% LB08
+    try:  
+     
+        # STATION, CHANNEL (DDF --> 400 Hz), NETWWORK AND LOCATION CODES 
+        sta = 'LB08' # STATION LB01
+        cha = 'HHZ' # CHANNEL - Vertical
+        net = 'Z4'  # Santiaguito volcano
+        loc = ''    # location, it depends mostly of which network you are in. 
+               
+        client = Client('138.253.112.23', 16022) # ip, port - ip's 138.253.113.19 or 138.253.112.23
+        t0 = UTCDateTime(year1, month1, day1, hour1, minute1, second1) #the format is year:day_of_the_year:month
+        t1 = t0 + day*24*60*60
+        t2 = t1 + 23*60*60 + 59*60 +59.999 #UTCDateTime(year2, month2, day2, hour2, minute2, second2) # notice we have here 10 minutes, but we can select our times. 
+        st8 = Stream()
+        st8 = client.get_waveforms(net, sta, '', cha, t1 , t2)
+        
+        # st is a stream, we can operate normally as in obspy
+        st8.detrend(type='linear')
+        st8.detrend(type='demean')
+        break_test=st8
+        break_test = break_test[0].filter("bandpass", freqmin=1,freqmax=10)
+
+    except: # give 2 seconds of blank data instead
+        
+        # STATION, CHANNEL (DDF --> 400 Hz), NETWWORK AND LOCATION CODES 
+        sta = 'LB01' # STATION LB01
+        cha = 'HHZ' # CHANNEL - Vertical
+        net = 'Z4'  # Santiaguito volcano
+        loc = ''    # location, it depends mostly of which network you are in. 
+
+        client = Client('138.253.113.19', 16022) # ip, port - ip's 138.253.113.19 or 138.253.112.23
+        t0 = UTCDateTime(year1, month1, day1, hour1, minute1, second1) #the format is year:day_of_the_year:month
+        t1 = t0 
+        t2 = t1 + 2 #UTCDateTime(year2, month2, day2, hour2, minute2, second2) # notice we have here 10 minutes, but we can select our times. 
+        st8 = Stream()
+        st8 = client.get_waveforms(net, sta, '', cha, t1 , t2)
+
+        st8.detrend(type='linear')
+        st8.detrend(type='demean')
+        st8[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
     #%% return all stations
-    return(st1,st2,st3,st4,st5,st6,st7)
+    return(st1,st2,st3,st4,st5,st6,st7,st8)
