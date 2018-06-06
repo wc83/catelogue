@@ -14,18 +14,19 @@ import numpy as np
 from numpy import argmax
 import matplotlib.pyplot as plt
 from obspy import UTCDateTime
+from obspy import Stream
 
 T1= time.clock()
 
 #%%
-file_exp = open('/Users/william/Documents/scanner/all_stations/full_exp_scan_v10.txt','w')
-file_cor2 = open('/Users/william/Documents/scanner/all_stations/full_correlated2_exp_scan_v10.txt','w')
-file_lb01= open('/Users/william/Documents/scanner/LB01/LB01_full_exp_scan_v10.txt','w')
-file_lb02= open('/Users/william/Documents/scanner/LB02/LB02_full_exp_scan_v10.txt','w')
-file_lb03= open('/Users/william/Documents/scanner/LB03/LB03_full_exp_scan_v10.txt','w')
-file_lb04= open('/Users/william/Documents/scanner/LB04/LB04_full_exp_scan_v10.txt','w')
-file_lb05= open('/Users/william/Documents/scanner/LB05/LB05_full_exp_scan_v10.txt','w')
-file_lb06= open('/Users/william/Documents/scanner/LB06/LB06_full_exp_scan_v10.txt','w')
+file_exp = open('/Users/william/Documents/scanner/all_stations/full_exp_scan_v10b.txt','w')
+file_cor2 = open('/Users/william/Documents/scanner/all_stations/full_correlated2_exp_scan_v10b.txt','w')
+file_lb01= open('/Users/william/Documents/scanner/LB01/LB01_full_exp_scan_v10b.txt','w')
+file_lb02= open('/Users/william/Documents/scanner/LB02/LB02_full_exp_scan_v10b.txt','w')
+file_lb03= open('/Users/william/Documents/scanner/LB03/LB03_full_exp_scan_v10b.txt','w')
+file_lb04= open('/Users/william/Documents/scanner/LB04/LB04_full_exp_scan_v10b.txt','w')
+file_lb05= open('/Users/william/Documents/scanner/LB05/LB05_full_exp_scan_v10b.txt','w')
+file_lb06= open('/Users/william/Documents/scanner/LB06/LB06_full_exp_scan_v10b.txt','w')
 
 
    #%% constants    
@@ -34,31 +35,25 @@ step=2
 crite=0.5 
 window=50
 fmin=0.1
-fmax=10
+fmax=10           
 #%% Reference stacked waveforms     
 
 #trs_e1,trs_e2,trs_e3,trs_e4,trs_e5,trs_e6,trs_e7=get_reference(fmin,fmax)
-trs_e1,trs_e2,trs_e3,trs_e4,trs_e5,trs_e6=stacked_LBz_exp() 
+trs_e1,trs_e2,trs_e3,trs_e4,trs_e5,trs_e6=stacked_LBz_exp(fmin,fmax) 
 
-
+print('stacked waveform input')
 #%% open empty streams for each station
-sample = read('/Users/william/Documents/lb01/14_336z.mseed')
-stream1 = sample.copy()
-stream1 = stream1.clear()
-stream2 = sample.copy()
-stream2 = stream2.clear()
-stream3 = sample.copy()
-stream3 = stream3.clear()
-stream4 = sample.copy()
-stream4 = stream4.clear()
-stream5 = sample.copy()
-stream5 = stream5.clear()
-stream6 = sample.copy()
-stream6 = stream6.clear()
+
+stream1 = Stream()
+stream2 = Stream()
+stream3 = Stream()
+stream4 = Stream()
+stream5 = Stream()
+stream6 = Stream()
 
 #%% Read in Each station
 num_active=[]
-for x in range(14,15):
+for x in range(14,17):
     
     seis1,seis2,seis3,seis4,seis5,seis6,num=get_LBz(x)
     
@@ -207,7 +202,7 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][8]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc_save)
+                                data_array.append(trc_save)
                                 cor_count += 1
                             lastcorr=0
                             add += 60-step               #skip 60s to avoid double catch
@@ -245,7 +240,7 @@ for p in range(0,len(stream1)):
                     break
         
                 trc2 = trace2.slice(starttime = view_start  , endtime= view_end)
-                trc2_save = trace1.slice(starttime = view_start -10 , endtime= view_end +10)
+                trc2_save = trace2.slice(starttime = view_start -10 , endtime= view_end +10)
                 trc2.detrend(type='linear')
                 trc2.detrend(type='demean')
                 trc2_save.detrend(type='linear')
@@ -318,7 +313,7 @@ for p in range(0,len(stream1)):
                                         cor_events[cor_count][9]="%1d" % Events_today[ind][3]
                                         cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                         correlated_today.append(expt)
-#                                                data_array.append(trc2_save)
+                                        data_array.append(trc2_save)
                                         cor_count += 1
                                         
                             else:
@@ -333,7 +328,7 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][9]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc2_save)
+                                data_array.append(trc2_save)
                                 cor_count += 1
                             
                             lastcorr =0
@@ -373,7 +368,7 @@ for p in range(0,len(stream1)):
                     break
         
                 trc3 = trace3.slice(starttime = view_start  , endtime= view_end)
-                trc3_save = trace1.slice(starttime = view_start -10 , endtime= view_end +10)
+                trc3_save = trace3.slice(starttime = view_start -10 , endtime= view_end +10)
                 trc3.detrend(type='linear')
                 trc3.detrend(type='demean')
                 trc3_save.detrend(type='linear')
@@ -447,11 +442,11 @@ for p in range(0,len(stream1)):
                                         cor_events[cor_count][10]="%1d" % Events_today[ind][4]
                                         cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                         correlated_today.append(expt)
-#                                                data_array.append(trc3_save)
+                                        data_array.append(trc3_save)
                                         cor_count += 1
                                     else:
                                         cor_events[inde][10]="%1d" % 1
-#                                                data_array.append(trc3_save)
+                                        data_array.append(trc3_save)
                                         
                                        
                             else:
@@ -466,7 +461,7 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][10]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc3_save)
+                                data_array.append(trc3_save)
                                 cor_count += 1
                             lastcorr=0    
                             add += 60-step               #skip 60s to avoid double catch
@@ -505,7 +500,7 @@ for p in range(0,len(stream1)):
                     break
         
                 trc4 = trace4.slice(starttime = view_start  , endtime= view_end)
-                trc4_save = trace1.slice(starttime = view_start -10 , endtime= view_end +10)
+                trc4_save = trace4.slice(starttime = view_start -10 , endtime= view_end +10)
                 trc4.detrend(type='linear')
                 trc4.detrend(type='demean')
                 trc4_save.detrend(type='linear')
@@ -579,11 +574,11 @@ for p in range(0,len(stream1)):
                                         cor_events[cor_count][11]="%1d" % Events_today[ind][5]
                                         cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                         correlated_today.append(expt)
-#                                                data_array.append(trc4_save)
+                                        data_array.append(trc4_save)
                                         cor_count += 1
                                     else:
                                         cor_events[inde][11]="%1d" % 1
-#                                                data_array.append(trc4_save)
+                                        data_array.append(trc4_save)
                             else:
                                 cor_events[cor_count][0]=rt
                                 cor_events[cor_count][1]="%1d" % p
@@ -596,7 +591,7 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][11]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc4_save)
+                                data_array.append(trc4_save)
                                 cor_count += 1
                                 
                             lastcorr=0    
@@ -636,7 +631,7 @@ for p in range(0,len(stream1)):
                     break
         
                 trc5 = trace5.slice(starttime = view_start  , endtime= view_end)
-                trc5_save = trace1.slice(starttime = view_start -10 , endtime= view_end +10)
+                trc5_save = trace5.slice(starttime = view_start -10 , endtime= view_end +10)
                 trc5.detrend(type='linear')
                 trc5.detrend(type='demean')
                 trc5_save.detrend(type='linear')
@@ -711,11 +706,11 @@ for p in range(0,len(stream1)):
                                         cor_events[cor_count][12]="%1d" % Events_today[ind][6]
                                         cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                         correlated_today.append(expt)
-#                                                data_array.append(trc5_save)
+                                        data_array.append(trc5_save)
                                         cor_count += 1
                                     else:
                                         cor_events[inde][12]="%1d" % 1
-#                                                data_array.append(trc5_save)
+                                        data_array.append(trc5_save)
 
                             else:
                                 cor_events[cor_count][0]= rt
@@ -729,7 +724,7 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][12]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc5_save)
+                                data_array.append(trc5_save)
                                 cor_count += 1
                             
                             lastcorr=0
@@ -769,7 +764,7 @@ for p in range(0,len(stream1)):
                     break
         
                 trc6 = trace6.slice(starttime = view_start  , endtime= view_end)
-                trc6_save = trace1.slice(starttime = view_start -10 , endtime= view_end +10)
+                trc6_save = trace6.slice(starttime = view_start -10 , endtime= view_end +10)
                 trc6.detrend(type='linear')
                 trc6.detrend(type='demean')
                 trc6_save.detrend(type='linear')
@@ -844,11 +839,11 @@ for p in range(0,len(stream1)):
                                         cor_events[cor_count][13]="%1d" % Events_today[ind][7]
                                         cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                         correlated_today.append(expt)
-#                                                data_array.append(trc6_save)
+                                        data_array.append(trc6_save)
                                         cor_count += 1
                                     else:
                                         cor_events[inde][13]="%1d" % 1
-#                                                data_array.append(trc6_save)
+                                        data_array.append(trc6_save)
 
                             else:
                                 cor_events[cor_count][0]=rt
@@ -862,7 +857,8 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][13]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
-#                                        data_array.append(trc6_save)
+                                data_array.append(trc6_save)
+                                
                                 cor_count += 1
                             lastcorr=0                                        
                             add += 60-step               #skip 60s to avoid double catch
@@ -881,65 +877,67 @@ for p in range(0,len(stream1)):
         file_exp.write(str(todays_event[l]))
         file_exp.write("\n")
     
-    if num_active[p] > 1:    
-        for s in range(0,len(correlated_today)):
-            file_cor2.write(str(correlated_today[s]))
-            file_cor2.write("\n")       
+      
+    for s in range(0,len(correlated_today)):
+        file_cor2.write(str(correlated_today[s]))
+        file_cor2.write("\n")       
 
-#%%             
+#%% 
+print("End of Scan")            
 col=0       
 cor_events=cor_events[np.argsort(cor_events[:,col])] 
 if cor_events[0][0]== 0.0:
     cor_events = np.delete(cor_events, (0), axis=0)       
-np.savetxt("/Users/william/Documents/scanner/all_stations/EXP_coincidence_V1.csv", cor_events,delimiter=",",header="Time_stamp,Day_number,Year,Day_of_year,Hour,Min,Sec,Milisec,LBO1,LB02,LB03,LB04,LB05,LB06")
+np.savetxt("/Users/william/Documents/scanner/all_stations/EXP_coincidence_V1b.csv", cor_events,delimiter=",",header="Time_stamp,Day_number,Year,Day_of_year,Hour,Min,Sec,Milisec,LBO1,LB02,LB03,LB04,LB05,LB06")
 
+data_stream = Stream()
 for r in range(0,len(cor_events)):
     if cor_events[r][8]==1:
         tr1a=stream1[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
-        tr1_save = tr1a.slice(starttime=dstart, endtime=dstart+80)
+        tr1_save = tr1a.slice(starttime=dstart-15, endtime=dstart+45)
         tr1_save.detrend(type='demean')
         tr1_save.detrend(type='linear')
-        data_array.append(tr1_save)
+        data_stream.append(tr1_save)         
     if cor_events[r][9]==1:
         tr2a=stream2[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
-        tr2_save = tr2a.slice(starttime=dstart, endtime=dstart+80)
+        tr2_save = tr2a.slice(starttime=dstart-15, endtime=dstart+45)
         tr2_save.detrend(type='demean')
         tr2_save.detrend(type='linear')
-        data_array.append(tr2_save)    
+        data_stream.append(tr2_save)
     if cor_events[r][10]==1:
         tr3a=stream3[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
-        tr3_save = tr3a.slice(starttime=dstart, endtime=dstart+80)
+        tr3_save = tr3a.slice(starttime=dstart-15, endtime=dstart+45)
         tr3_save.detrend(type='demean')
         tr3_save.detrend(type='linear')
-        data_array.append(tr3_save)         
+        data_stream.append(tr3_save)         
     if cor_events[r][11]==1:
         tr4a=stream4[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
-        tr4_save = tr4a.slice(starttime=dstart, endtime=dstart+80)
+        tr4_save = tr4a.slice(starttime=dstart-15, endtime=dstart+45)
         tr4_save.detrend(type='demean')
         tr4_save.detrend(type='linear')
-        data_array.append(tr4_save)    
+        data_stream.append(tr4_save)
     if cor_events[r][12]==1:
         tr5a=stream5[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
-        tr5_save = tr5a.slice(starttime=dstart, endtime=dstart+80)
+        tr5_save = tr5a.slice(starttime=dstart-15, endtime=dstart+45)
         tr5_save.detrend(type='demean')
         tr5_save.detrend(type='linear')
-        data_array.append(tr5_save)
+        data_stream.append(tr5_save)
     if cor_events[r][13]==1:
         tr6a=stream6[int(cor_events[r][1])] 
         dstart=UTCDateTime(cor_events[r][0])
-        tr6_save = tr6a.slice(starttime=dstart, endtime=dstart+80)
+        tr6_save = tr6a.slice(starttime=dstart-15, endtime=dstart+45)
         tr6_save.detrend(type='demean')
         tr6_save.detrend(type='linear')
-        data_array.append(tr6_save)
+        data_stream.append(tr6_save)
         
-        
+data_stream.write('/Users/william/Documents/scanner/output_data/EXP_data_stream_v1b.mseed', format='MSEED')         
 #%%
-print("End of Scan")
+print("Data saved")
 T2=time.clock()
 elapsed= T2-T1
 print('Time taken:', elapsed)
