@@ -7,7 +7,7 @@ Created on Tue Jun  5 14:06:15 2018
 """
 
 
-def stacked_LSz_eq(fmi,fma):
+def stacked_LS_eq(fmi,fma):
     import numpy as np
     import obspy
     from obspy.core import read   
@@ -87,7 +87,7 @@ def stacked_LSz_eq(fmi,fma):
     
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis1 = Stream()
             seis1 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -96,7 +96,7 @@ def stacked_LSz_eq(fmi,fma):
             trc1.detrend(type='demean')
             trc1.detrend(type='linear')
             stream1.append(trc1)
-            trc1.plot(type='relative',color='b')
+#            trc1.plot(type='relative',color='b')
     
     
     for x in range(0,len(stream1)):
@@ -106,9 +106,9 @@ def stacked_LSz_eq(fmi,fma):
     stack_norm1 = np.sum([abs(trc.data) for trc in stream1b], axis=0)
     stack_norm1 = stack_norm1/len(stream1b)
     
-    plt.figure(1)
-    plt.plot(stack_norm1,color='r')
-    plt.title('LS01 stacked earthquake waveform')
+#    plt.figure(1)
+#    plt.plot(stack_norm1,color='r')
+#    plt.title('LS01 stacked earthquake waveform')
     
     #%% LB02
     sta = 'LS02' # STATION LB02
@@ -156,7 +156,7 @@ def stacked_LSz_eq(fmi,fma):
     
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis2 = Stream()
             seis2 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -165,7 +165,7 @@ def stacked_LSz_eq(fmi,fma):
             trc2.detrend(type='demean')
             trc2.detrend(type='linear')
             stream2.append(trc2)
-            trc2.plot(type='relative',color='b')
+#            trc2.plot(type='relative',color='b')
     
     for x in range(0,len(stream2)):
         trc=stream2[x].normalize()
@@ -174,9 +174,9 @@ def stacked_LSz_eq(fmi,fma):
     stack_norm2 = np.sum([abs(trc.data) for trc in stream2b], axis=0)
     stack_norm2 = stack_norm2/len(stream2b)
     
-    plt.figure(2)
-    plt.plot(stack_norm2,color='r')
-    plt.title('LS02 stacked earthquake waveform')
+#    plt.figure(2)
+#    plt.plot(stack_norm2,color='r')
+#    plt.title('LS02 stacked earthquake waveform')
     
     #%% LB03
     sta = 'LS03' # STATION LB02
@@ -223,7 +223,7 @@ def stacked_LSz_eq(fmi,fma):
     
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20 
-            t2 = t1 + 80  
+            t2 = t1 + 90  
             seis3 = Stream()
             seis3 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -232,7 +232,7 @@ def stacked_LSz_eq(fmi,fma):
             trc3.detrend(type='demean')
             trc3.detrend(type='linear')
             stream3.append(trc3)
-            trc3.plot(type='relative',color='b')
+#            trc3.plot(type='relative',color='b')
     
     
     for x in range(0,len(stream3)):
@@ -242,9 +242,9 @@ def stacked_LSz_eq(fmi,fma):
     stack_norm3 = np.sum([abs(trc.data) for trc in stream3b], axis=0)
     stack_norm3 = stack_norm3/len(stream3b)
     
-    plt.figure(3)
-    plt.plot(stack_norm3,color='r')
-    plt.title('LS03 stacked earthquake waveform')
+#    plt.figure(3)
+#    plt.plot(stack_norm3,color='r')
+#    plt.title('LS03 stacked earthquake waveform')
     
     #%% LB04
     sta = 'LS04' # STATION LB02
@@ -291,7 +291,7 @@ def stacked_LSz_eq(fmi,fma):
     
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis4 = Stream()
             seis4 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -300,7 +300,7 @@ def stacked_LSz_eq(fmi,fma):
             trc4.detrend(type='demean')
             trc4.detrend(type='linear')
             stream4.append(trc4)
-            trc4.plot(type='relative',color='b')
+#            trc4.plot(type='relative',color='b')
     
     for x in range(0,len(stream4)):
         trc=stream4[x].normalize()
@@ -309,9 +309,9 @@ def stacked_LSz_eq(fmi,fma):
     stack_norm4 = np.sum([abs(trc.data) for trc in stream4b], axis=0)
     stack_norm4 = stack_norm4/len(stream4b)
     
-    plt.figure(4)
-    plt.plot(stack_norm4,color='r')
-    plt.title('LS04 stacked earthquake waveform')
+#    plt.figure(4)
+#    plt.plot(stack_norm4,color='r')
+#    plt.title('LS04 stacked earthquake waveform')
     
     #%% LB05
     sta = 'LS05' # STATION LB02
@@ -346,7 +346,7 @@ def stacked_LSz_eq(fmi,fma):
     
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis5 = Stream()
             seis5 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -355,7 +355,7 @@ def stacked_LSz_eq(fmi,fma):
             trc5.detrend(type='demean')
             trc5.detrend(type='linear')
             stream5.append(trc5)
-            trc5.plot(type='relative',color='b')
+#            trc5.plot(type='relative',color='b')
     
     
     for x in range(0,len(stream5)):
@@ -364,9 +364,10 @@ def stacked_LSz_eq(fmi,fma):
     
     stack_norm5 = np.sum([abs(trc.data) for trc in stream5b], axis=0)
     stack_norm5 = stack_norm5/len(stream5b)
-    plt.figure(5)
-    plt.plot(stack_norm5,color='r')
-    plt.title('LS05 stacked earthquake waveform')
+    
+#    plt.figure(5)
+#    plt.plot(stack_norm5,color='r')
+#    plt.title('LS05 stacked earthquake waveform')
     
     #%% LB06
     sta = 'LS06' # STATION LB02
@@ -394,7 +395,7 @@ def stacked_LSz_eq(fmi,fma):
         d=M[i][3]
         #
         t1 = t0 + d*24*60*60 + h*60*60 + m*60 + s  -20
-        t2 = t1 + 80
+        t2 = t1 + 90
         seis6 = Stream()
         seis6 = client.get_waveforms(net, sta, '', cha, t1 , t2)
         
@@ -403,7 +404,7 @@ def stacked_LSz_eq(fmi,fma):
         trc6.detrend(type='demean')
         trc6.detrend(type='linear')
         stream6.append(trc6)
-        trc6.plot(type='relative',color='b')
+#        trc6.plot(type='relative',color='b')
         
     
     for x in range(0,len(stream6)):
@@ -412,9 +413,10 @@ def stacked_LSz_eq(fmi,fma):
     
     stack_norm6 = np.sum([abs(trc.data) for trc in stream6b], axis=0)
     stack_norm6 = stack_norm6/len(stream6b)
-    plt.figure(6)
-    plt.plot(stack_norm6,color='r')
-    plt.title('LS06 stacked earthquake waveform')
+    
+#    plt.figure(6)
+#    plt.plot(stack_norm6,color='r')
+#    plt.title('LS06 stacked earthquake waveform')
     
 ##%% LB07
 #sta = 'LS07' # STATION LB02

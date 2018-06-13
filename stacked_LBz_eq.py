@@ -85,7 +85,7 @@ def stacked_LBz_eq(fmi,fma):
 
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis1 = Stream()
             seis1 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -154,7 +154,7 @@ def stacked_LBz_eq(fmi,fma):
 
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis2 = Stream()
             seis2 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -221,7 +221,7 @@ def stacked_LBz_eq(fmi,fma):
 
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20 
-            t2 = t1 + 80  
+            t2 = t1 + 90  
             seis3 = Stream()
             seis3 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -289,7 +289,7 @@ def stacked_LBz_eq(fmi,fma):
 
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis4 = Stream()
             seis4 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -351,7 +351,7 @@ def stacked_LBz_eq(fmi,fma):
 
             #
             t1 = t0 + x*24*60*60 + h*60*60 + m*60 + s  -20
-            t2 = t1 + 80
+            t2 = t1 + 90
             seis5 = Stream()
             seis5 = client.get_waveforms(net, sta, '', cha, t1 , t2)
             
@@ -399,7 +399,7 @@ def stacked_LBz_eq(fmi,fma):
         d=M[i][3]
         #
         t1 = t0 + d*24*60*60 + h*60*60 + m*60 + s  -20
-        t2 = t1 + 80
+        t2 = t1 + 90
         seis6 = Stream()
         seis6 = client.get_waveforms(net, sta, '', cha, t1 , t2)
         

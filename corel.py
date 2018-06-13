@@ -13,10 +13,10 @@ def corel(wav1,wav2,shift):
     top=corel.argmax()
     bot=corel.argmin()
     top_v = corel[top]
-    bot_v = corel[bot]  
-    
+    bot_v = corel[bot] 
+    top = (shift)-top
     if abs(bot_v) > abs(top_v):
         top_v=abs(bot_v)
-        top=shift-bot #goes from -shift to +shift but list goes from 0 to 2xshift
+        top=(shift)-bot #goes from -shift to +shift but list goes from 0 to 2xshift
 
     return(top_v,top,corel)

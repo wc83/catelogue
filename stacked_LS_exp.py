@@ -97,9 +97,9 @@ def stacked_LS_exp(fmi,fma):
     stack_norm1 = np.sum([abs(trc.data) for trc in stream1b], axis=0)
     stack_norm1 = stack_norm1/len(stream1b)
     
-    plt.figure(1)
-    plt.plot(stack_norm1,color='r')
-    plt.title('LS01 stacked explosion waveform')    
+#    plt.figure(1)
+#    plt.plot(stack_norm1,color='r')
+#    plt.title('LS01 stacked explosion waveform')    
             
     #%% LB02
     sta = 'LS02' # STATION LB02
@@ -158,9 +158,9 @@ def stacked_LS_exp(fmi,fma):
     stack_norm2 = np.sum([abs(trc.data) for trc in stream2b], axis=0)
     stack_norm2 = stack_norm2/len(stream2b)
     
-    plt.figure(2)
-    plt.plot(stack_norm2,color='r')
-    plt.title('LS02 stacked explosion waveform')    
+#    plt.figure(2)
+#    plt.plot(stack_norm2,color='r')
+#    plt.title('LS02 stacked explosion waveform')    
                 
     #%% LB03
     sta = 'LS03' # STATION LB03
@@ -212,9 +212,9 @@ def stacked_LS_exp(fmi,fma):
     stack_norm3 = np.sum([abs(trc.data) for trc in stream3b], axis=0)
     stack_norm3 = stack_norm3/len(stream3b)
     
-    plt.figure(3)
-    plt.plot(stack_norm3,color='r')
-    plt.title('LS03 stacked explosion waveform')      
+#    plt.figure(3)
+#    plt.plot(stack_norm3,color='r')
+#    plt.title('LS03 stacked explosion waveform')      
     #        
     #%% LB04
     sta = 'LS04' # STATION LB04
@@ -267,9 +267,9 @@ def stacked_LS_exp(fmi,fma):
     stack_norm4 = np.sum([abs(trc.data) for trc in stream4b], axis=0)
     stack_norm4 = stack_norm4/len(stream4b)
     
-    plt.figure(4)
-    plt.plot(stack_norm4,color='r')
-    plt.title('LS04 stacked explosion waveform')      
+#    plt.figure(4)
+#    plt.plot(stack_norm4,color='r')
+#    plt.title('LS04 stacked explosion waveform')      
             
     #%% LB05
     sta = 'LS05' # STATION LB05
@@ -316,9 +316,9 @@ def stacked_LS_exp(fmi,fma):
     stack_norm5 = np.sum([abs(trc.data) for trc in stream5b], axis=0)
     stack_norm5 = stack_norm5/len(stream5b)
     
-    plt.figure(5)
-    plt.plot(stack_norm5,color='r')
-    plt.title('LS05 stacked explosion waveform')  
+#    plt.figure(5)
+#    plt.plot(stack_norm5,color='r')
+#    plt.title('LS05 stacked explosion waveform')  
         
         #%% LB06    
          
@@ -358,53 +358,11 @@ def stacked_LS_exp(fmi,fma):
     stack_norm6 = np.sum([abs(trc.data) for trc in stream6b], axis=0)
     stack_norm6 = stack_norm6/len(stream6)
     
-    plt.figure(6)
-    plt.plot(stack_norm6,color='r')
-    plt.title('LS06 stacked explosion waveform') 
+#    plt.figure(6)
+#    plt.plot(stack_norm6,color='r')
+#    plt.title('LS06 stacked explosion waveform') 
     
         
-        #%% LB07   
-    #     
-    #    # STATION, CHANNEL (DDF --> 400 Hz), NETWWORK AND LOCATION CODES 
-    #    sta = 'LB07' # STATION LB01
-    #    cha = 'HHZ' # CHANNEL - Vertical
-    #    net = 'Z4'  # Santiaguito volcano
-    #    loc = ''    # location, it depends mostly of which network you are in. 
-    #    
-    #    client = Client('138.253.113.19', 16022) # ip, port - ip's 138.253.113.19 or 138.253.112.23
-    #    t0 = UTCDateTime(2016, 6, 21, hour1, minute1, second1) #the format is year:day_of_the_year:month
-    #     
-    #    M=[[5,14,33,22],[10,59,27,33],[1,11,29,36]]
-    #    
-    #    for i in range(0,len(M)):
-    #        h=M[i][0]
-    #        m=M[i][1]
-    #        s=M[i][2]
-    #        d=M[i][3]
-    #        
-    #        t1 = t0 + d*24*60*60 + h*60*60 + m*60 + s  -60
-    #        t2 = t1 +110
-    #        seis7 = Stream()
-    #        seis7 = client.get_waveforms(net, sta, '', cha, t1 , t2)
-    #        
-    #        seis7[0].filter("bandpass", freqmin=fmin,freqmax=fmax)
-    #        trc7 = seis7[0].slice(starttime = t1 + 30  , endtime= t2 - 10)
-    #        trc7.detrend(type='demean')
-    #        trc7.detrend(type='linear')
-    #        stream7.append(trc7)    
-    ##        trc7.plot(type='relative',color='b')
-    #    
-    #    for x in range(0,len(stream7)):
-    #        trc=stream7[x].normalize()
-    #        stream7b.append(trc)
-    #    
-    #    stack_norm7 = np.sum([abs(trc.data) for trc in stream7b], axis=0)
-    #    stack_norm7 = stack_norm7/len(stream7)
-    #    
-    ##    plt.figure(7)
-    ##    plt.plot(stack_norm7,color='r') 
-    ##    plt.title('LB07 stacked explosion waveform')  
-    #    
-    #    #stack_norm7b = obspy.signal.filter.envelope(trc7.data)
+  
         #%%
     return(stack_norm1,stack_norm2,stack_norm3,stack_norm4,stack_norm5,stack_norm6)#,stack_norm7)

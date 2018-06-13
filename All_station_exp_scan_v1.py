@@ -27,19 +27,18 @@ file_lb03= open('/Users/william/Documents/scanner/LB03/LB03_all_exp_scan_v1.txt'
 file_lb04= open('/Users/william/Documents/scanner/LB04/LB04_all_exp_scan_v1.txt','w')
 file_lb05= open('/Users/william/Documents/scanner/LB05/LB05_all_exp_scan_v1.txt','w')
 file_lb06= open('/Users/william/Documents/scanner/LB06/LB06_all_exp_scan_v1.txt','w')
-file_ls01= open('/Users/william/Documents/scanner/LB01/LS01_all_exp_scan_v1.txt','w')
-file_ls02= open('/Users/william/Documents/scanner/LB02/LS02_all_exp_scan_v1.txt','w')
-file_ls03= open('/Users/william/Documents/scanner/LB03/LS03_all_exp_scan_v1.txt','w')
-file_ls04= open('/Users/william/Documents/scanner/LB04/LS04_all_exp_scan_v1.txt','w')
-file_ls05= open('/Users/william/Documents/scanner/LB05/LS05_all_exp_scan_v1.txt','w')
-file_ls06= open('/Users/william/Documents/scanner/LB06/LS06_all_exp_scan_v1.txt','w')
+file_ls01= open('/Users/william/Documents/scanner/LS01/LS01_all_exp_scan_v1.txt','w')
+file_ls02= open('/Users/william/Documents/scanner/LS02/LS02_all_exp_scan_v1.txt','w')
+file_ls03= open('/Users/william/Documents/scanner/LS03/LS03_all_exp_scan_v1.txt','w')
+file_ls04= open('/Users/william/Documents/scanner/LS04/LS04_all_exp_scan_v1.txt','w')
+file_ls05= open('/Users/william/Documents/scanner/LS05/LS05_all_exp_scan_v1.txt','w')
+file_ls06= open('/Users/william/Documents/scanner/LS06/LS06_all_exp_scan_v1.txt','w')
 
 
-   #%% constants    
-shift=100
-step=2
-crite=0.5 
-window=50
+   #%% constants  
+step=4
+shift=50*step
+crite=0.7 
 fmin=0.1
 fmax=10           
 #%% Reference stacked waveforms     
@@ -65,7 +64,7 @@ stream6s = Stream()
 
 #%% Read in Each station
 num_active=[]
-for x in range(14,17):
+for x in range(0,1):
     
     seis1,seis2,seis3,seis4,seis5,seis6,seis1s,seis2s,seis3s,seis4s,seis5s,seis6s,num=get_all_stations(x)
     
@@ -121,7 +120,7 @@ switch6s=0
 
 #%% Loop over whole time one day at a time
 cor_events=np.zeros(shape=(1,20))
-cor_count=-1
+cor_count=0
 for p in range(0,len(stream1)):
     file_exp.write("\n")
     file_cor2.write("\n")
@@ -163,6 +162,7 @@ for p in range(0,len(stream1)):
         if switch1 ==1:
         
             begin = trace1.stats.starttime
+            window=int(len(trs_e1)/100)
             add=0
             lastcorr=0
             expt=0
@@ -175,6 +175,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc = trace1.slice(starttime = view_start  , endtime= view_end)
+                if trc.stats.npts < 100:
+                    break
                 trc.detrend(type='linear')
                 trc.detrend(type='demean')
                 # only look for things above noise level 
@@ -211,16 +213,17 @@ for p in range(0,len(stream1)):
                             file_lb01.write(str(expt))
                             file_lb01.write("\n")
                             
-                            
-                            todays_event.append(expt)
-                            Event_store.append(row)
-                            Events_today[find_count][0]=rt
-                            Events_today[find_count][1]=p
-                            Events_today[find_count][2]=1
-                            Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                            All_events.append(expt)
-                            find_count += 1
-                            Number_of_events_today += 1
+                            near,ind=find_nearest(Events_today[:,0], rt)
+                            if abs(rt-near) > 60:
+                                todays_event.append(expt)
+                                Event_store.append(row)
+                                Events_today[find_count][0]=rt
+                                Events_today[find_count][1]=p
+                                Events_today[find_count][2]=1
+                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                All_events.append(expt)
+                                find_count += 1
+                                Number_of_events_today += 1
                             
                             if num_active[p] == 1:
                                 cor_events[cor_count][0]=rt
@@ -236,10 +239,10 @@ for p in range(0,len(stream1)):
                                 correlated_today.append(expt)
                                 cor_count += 1
                             lastcorr=0
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch1=0
@@ -260,6 +263,7 @@ for p in range(0,len(stream1)):
         if switch2 ==1:
             
             begin = trace2.stats.starttime
+            window=int(len(trs_e2)/100)
             add=0
             lastcorr=0     
             expt=0
@@ -271,6 +275,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc2 = trace2.slice(starttime = view_start  , endtime= view_end)
+                if trc2.stats.npts < 100:
+                    break
                 trc2.detrend(type='linear')
                 trc2.detrend(type='demean')
                 # only look for things above noise level 
@@ -326,9 +332,9 @@ for p in range(0,len(stream1)):
                                 Events_today[ind][3]=1
                             
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
+                                if abs(rt-near) <= 20:
                                     near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
+                                    if abs(rt-near_cor) >  60:
                                         cor_events[cor_count][0]=rt
                                         cor_events[cor_count][1]="%1d" % p
                                         cor_events[cor_count][2]="%1d" % yr
@@ -358,10 +364,10 @@ for p in range(0,len(stream1)):
                                 cor_count += 1
                             
                             lastcorr =0
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch2=0
@@ -383,6 +389,7 @@ for p in range(0,len(stream1)):
         if switch3 ==1:
         
             begin = trace3.stats.starttime
+            window=int(len(trs_e3)/100)
             add=0
             lastcorr=0  
             expt=0
@@ -394,6 +401,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc3 = trace3.slice(starttime = view_start  , endtime= view_end)
+                if trc3.stats.npts < 100:
+                    break
                 trc3.detrend(type='linear')
                 trc3.detrend(type='demean')
                 # only look for things above noise level 
@@ -449,9 +458,9 @@ for p in range(0,len(stream1)):
                                 Events_today[ind][4]=1
 
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
+                                if abs(rt-near) <= 20:
                                     near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
+                                    if abs(rt-near_cor) >  60:
                                         cor_events[cor_count][0]=rt
                                         cor_events[cor_count][1]="%1d" % p
                                         cor_events[cor_count][2]="%1d" % yr
@@ -483,10 +492,10 @@ for p in range(0,len(stream1)):
                                 correlated_today.append(expt)
                                 cor_count += 1
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch3=0
@@ -508,6 +517,7 @@ for p in range(0,len(stream1)):
         if switch4 ==1:
         
             begin = trace4.stats.starttime
+            window=int(len(trs_e4)/100)
             add=0
             lastcorr=0  
             expt=0
@@ -519,6 +529,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc4 = trace4.slice(starttime = view_start  , endtime= view_end)
+                if trc4.stats.npts < 100:
+                    break
                 trc4.detrend(type='linear')
                 trc4.detrend(type='demean')
                 # only look for things above noise level 
@@ -573,9 +585,9 @@ for p in range(0,len(stream1)):
                                 Events_today[ind][5]=1
                             
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
+                                if abs(rt-near) <= 20:
                                     near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
+                                    if abs(rt-near_cor) >  60:
                                         cor_events[cor_count][0]=rt
                                         cor_events[cor_count][1]="%1d" % p
                                         cor_events[cor_count][2]="%1d" % yr
@@ -608,10 +620,10 @@ for p in range(0,len(stream1)):
                                 cor_count += 1
                                 
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step             #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch4=0
@@ -633,6 +645,7 @@ for p in range(0,len(stream1)):
         if switch5 ==1:
             
             begin = trace5.stats.starttime
+            window=int(len(trs_e5)/100)
             add=0
             lastcorr=0 
             expt=0
@@ -644,6 +657,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc5 = trace5.slice(starttime = view_start  , endtime= view_end)
+                if trc5.stats.npts < 100:
+                    break
                 trc5.detrend(type='linear')
                 trc5.detrend(type='demean')
                 # only look for things above noise level 
@@ -698,9 +713,9 @@ for p in range(0,len(stream1)):
                                 Events_today[ind][6]=1
                             
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
+                                if abs(rt-near) <= 20:
                                     near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
+                                    if abs(rt-near_cor) >  60:
                                         cor_events[cor_count][0]=rt
                                         cor_events[cor_count][1]="%1d" % p
                                         cor_events[cor_count][2]="%1d" % yr
@@ -735,10 +750,10 @@ for p in range(0,len(stream1)):
                                 cor_count += 1
                             
                             lastcorr=0
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step             #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0
     else:
         switch5=0
@@ -760,6 +775,7 @@ for p in range(0,len(stream1)):
         if switch6 ==1:
         
             begin = trace6.stats.starttime
+            window=int(len(trs_e6)/100)
             add=0
             lastcorr=0 
             expt=0
@@ -771,6 +787,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc6 = trace6.slice(starttime = view_start  , endtime= view_end)
+                if trc6.stats.npts < 100:
+                    break
                 trc6.detrend(type='linear')
                 trc6.detrend(type='demean')
                 # only look for things above noise level 
@@ -825,9 +843,9 @@ for p in range(0,len(stream1)):
                                 Events_today[ind][7]=1
                             
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
+                                if abs(rt-near) <= 20:
                                     near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
+                                    if abs(rt-near_cor) >  60:
                                         cor_events[cor_count][0]=rt
                                         cor_events[cor_count][1]="%1d" % p
                                         cor_events[cor_count][2]="%1d" % yr
@@ -862,15 +880,15 @@ for p in range(0,len(stream1)):
                                 
                                 cor_count += 1
                             lastcorr=0                                        
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step             #skip 60s to avoid double catch
     
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch6=0
 
-#%% Station LB01 scan    
+#%% Station LS01 scan    
     if trace1s.stats.npts > 201: 
         trace1s.detrend(type='linear')
         trace1s.detrend(type='demean')
@@ -887,6 +905,7 @@ for p in range(0,len(stream1)):
         if switch1s ==1:
         
             begin = trace1s.stats.starttime
+            window=int(len(trs_s1)/100)
             add=0
             lastcorr=0
             expt=0
@@ -899,14 +918,16 @@ for p in range(0,len(stream1)):
                     break
         
                 trcs = trace1s.slice(starttime = view_start  , endtime= view_end)
+                if trcs.stats.npts < 100:
+                    break
                 trcs.detrend(type='linear')
                 trcs.detrend(type='demean')
                 # only look for things above noise level 
-                amp=abs(trc.max())
+                amp=abs(trcs.max())
                 
                 if amp > av_amp1s:                
                     peak,cf,bwid,bwid25 = freq_info(trcs.data,trcs.stats.starttime,trcs.stats.endtime)         
-                    if (0.75 < cf < 2.75) and (0.2 < peak < 2.5) and (0.3 < bwid < 2.5): 
+                    if (1 < cf < 3.5) and (0.5 < peak < 3.5) and (0.3 < bwid < 3): 
                              #correlate between data and earthquake envelopes 
                         trcs_e = obspy.signal.filter.envelope(trcs.data) 
                         top_v,top,corell = corel(trs_s1,trcs_e,shift)
@@ -934,50 +955,33 @@ for p in range(0,len(stream1)):
                             mi=expt.minute
                             se=expt.second
                             ms=expt.microsecond/10000
-                            
-                            if abs(rt-near) > 60: #60s
-                                
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][10]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            
-                            else:
-                                Events_today[ind][10]=1
+                            near,ind=find_nearest(Events_today[:,0], rt)
 
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events[cor_count][16]="%1d" % Events_today[ind][10]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][16]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][14]="%1d" % 1
                                         
                                        
                             else:
@@ -989,18 +993,18 @@ for p in range(0,len(stream1)):
                                 cor_events[cor_count][5]="%1d" % mi
                                 cor_events[cor_count][6]="%1d" % se
                                 cor_events[cor_count][7]="%1d" % ms
-                                cor_events[cor_count][16]="%1d" % 1
+                                cor_events[cor_count][14]="%1d" % 1
                                 cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
                                 correlated_today.append(expt)
                                 cor_count += 1
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
-        switch3s=0
+        switch1s=0
  #%% Station 2 scan  
     if trace2s.stats.npts > 201:
         trace2s.detrend(type='linear')
@@ -1018,6 +1022,7 @@ for p in range(0,len(stream1)):
         if switch2s ==1:
             
             begin = trace2s.stats.starttime
+            window=int(len(trs_s2)/100)
             add=0
             lastcorr=0     
             expt=0
@@ -1029,6 +1034,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc2s = trace2s.slice(starttime = view_start  , endtime= view_end)
+                if trc2s.stats.npts < 100:
+                    break
                 trc2s.detrend(type='linear')
                 trc2s.detrend(type='demean')
                 # only look for things above noise level 
@@ -1036,7 +1043,7 @@ for p in range(0,len(stream1)):
                 
                 if amp > av_amp2s:  
                     peak2,cf2,bwid2,bwid252 = freq_info(trc2s.data,trc2s.stats.starttime,trc2s.stats.endtime)      
-                    if (0.75 < cf2 < 2.75) and (0.4 < peak2 < 3) and (0.2 < bwid2 < 2.5):
+                    if (1 < cf2 < 4.5) and (0.4 < peak2 < 3) and (0.15 < bwid2 < 2.5):
                              #correlate between data and earthquake envelopes 
                         trc2s_e = obspy.signal.filter.envelope(trc2s.data) 
                         top_v,top,corell = corel(trs_s2,trc2s_e,shift)
@@ -1063,51 +1070,35 @@ for p in range(0,len(stream1)):
                             hr=expt.hour
                             mi=expt.minute
                             se=expt.second
-                            ms=expt.microsecond/10000	
+                            ms=expt.microsecond/10000
                             near,ind=find_nearest(Events_today[:,0], rt)
-                            if abs(rt-near) > 60: #60s
-  
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][9]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            
-                            else:
-                                Events_today[ind][9]=1
 
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][15]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events[cor_count][15]="%1d" % Events_today[ind][9]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][15]="%1d" % 1
                                        
                             else:
                                 cor_events[cor_count][0]=rt
@@ -1123,10 +1114,10 @@ for p in range(0,len(stream1)):
                                 correlated_today.append(expt)
                                 cor_count += 1
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch2s=0 
@@ -1147,6 +1138,7 @@ for p in range(0,len(stream1)):
         if switch3s ==1:
         
             begin = trace3s.stats.starttime
+            window=int(len(trs_s3)/100)
             add=0
             lastcorr=0  
             expt=0
@@ -1154,10 +1146,12 @@ for p in range(0,len(stream1)):
             for t in range(0,int(trace3s.stats.npts/100), step):
                 view_start = begin + t + add
                 view_end = view_start + window
-                if view_start > trace3.stats.endtime - window :
+                if view_start > trace3s.stats.endtime - window :
                     break
         
                 trc3s = trace3s.slice(starttime = view_start  , endtime= view_end)
+                if trc3s.stats.npts < 100:
+                    break
                 trc3s.detrend(type='linear')
                 trc3s.detrend(type='demean')
                 # only look for things above noise level 
@@ -1165,7 +1159,7 @@ for p in range(0,len(stream1)):
                 
                 if amp > av_amp3s:       
                     peak3,cf3,bwid3,bwid253 = freq_info(trc3s.data,trc3s.stats.starttime,trc3s.stats.endtime)      
-                    if (0.9 < cf3 < 4) and (0.2 < peak3 < 2.5) and (0.2 < bwid3 < 2.75):
+                    if (1 < cf3 < 6) and (0.6 < peak3 < 3.5) and ( bwid3 < 3.5):
                              #correlate between data and earthquake envelopes 
                         trc3s_e = obspy.signal.filter.envelope(trc3s.data) 
                         top_v,top,corell = corel(trs_s3,trc3s_e,shift)
@@ -1192,52 +1186,36 @@ for p in range(0,len(stream1)):
                             hr=expt.hour
                             mi=expt.minute
                             se=expt.second
-                            ms=expt.microsecond/10000	
+                            ms=expt.microsecond/10000
                             near,ind=find_nearest(Events_today[:,0], rt)
-                            if abs(rt-near) > 60: #60s
-  
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][10]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            
-                            else:
-                                Events_today[ind][10]=1
 
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events[cor_count][16]="%1d" % Events_today[ind][10]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][16]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events[cor_count][15]="%1d" % Events_today[ind][9]
+                                            cor_events[cor_count][16]="%1d" % Events_today[ind][10]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][16]="%1d" % 1
                                        
                             else:
                                 cor_events[cor_count][0]=rt
@@ -1253,10 +1231,10 @@ for p in range(0,len(stream1)):
                                 correlated_today.append(expt)
                                 cor_count += 1
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step            #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch3s=0
@@ -1278,6 +1256,7 @@ for p in range(0,len(stream1)):
         if switch4s ==1:
         
             begin = trace4s.stats.starttime
+            window=int(len(trs_s4)/100)
             add=0
             lastcorr=0  
             expt=0
@@ -1289,6 +1268,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc4s = trace4s.slice(starttime = view_start  , endtime= view_end)
+                if trc4s.stats.npts < 100:
+                    break
                 trc4s.detrend(type='linear')
                 trc4s.detrend(type='demean')
                 # only look for things above noise level 
@@ -1296,7 +1277,7 @@ for p in range(0,len(stream1)):
                 
                 if amp > av_amp4s:       
                     peak4,cf4,bwid4,bwid254 = freq_info(trc4s.data,trc4s.stats.starttime,trc4s.stats.endtime)      
-                    if (0.9 < cf4 < 5) and (0.4 < peak4 < 3.5) and (0.3 < bwid4 < 4): 
+                    if (2 < cf4 < 6) and (0.4 < peak4 < 3.2) and (0.1 < bwid4 < 5.5): 
                              #correlate between data and earthquake envelopes 
                         trc4s_e = obspy.signal.filter.envelope(trc4s.data) 
                         top_v,top,corell = corel(trs_s4,trc4s_e,shift)
@@ -1324,51 +1305,36 @@ for p in range(0,len(stream1)):
                             mi=expt.minute
                             se=expt.second
                             ms=expt.microsecond/10000
-                            
                             near,ind=find_nearest(Events_today[:,0], rt)
-                            if abs(rt-near) > 60: #60s
-  
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][11]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            else:
-                                Events_today[ind][11]=1
-                            
+
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events[cor_count][16]="%1d" % Events_today[ind][10]
-                                        cor_events[cor_count][17]="%1d" % Events_today[ind][11]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][17]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events[cor_count][15]="%1d" % Events_today[ind][9]
+                                            cor_events[cor_count][16]="%1d" % Events_today[ind][10]
+                                            cor_events[cor_count][17]="%1d" % Events_today[ind][11]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][17]="%1d" % 1
                             else:
                                 cor_events[cor_count][0]=rt
                                 cor_events[cor_count][1]="%1d" % p
@@ -1384,10 +1350,10 @@ for p in range(0,len(stream1)):
                                 cor_count += 1
                                 
                             lastcorr=0    
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step              #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch4s=0
@@ -1409,6 +1375,7 @@ for p in range(0,len(stream1)):
         if switch5s ==1:
             
             begin = trace5s.stats.starttime
+            window=int(len(trs_s5)/100)
             add=0
             lastcorr=0 
             expt=0
@@ -1420,6 +1387,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc5s = trace5s.slice(starttime = view_start  , endtime= view_end)
+                if trc5s.stats.npts < 100:
+                    break
                 trc5s.detrend(type='linear')
                 trc5s.detrend(type='demean')
                 # only look for things above noise level 
@@ -1427,7 +1396,7 @@ for p in range(0,len(stream1)):
                 
                 if amp > av_amp5s:       
                     peak5,cf5,bwid5,bwid255 = freq_info(trc5s.data,trc5s.stats.starttime,trc5s.stats.endtime)      
-                    if (0.9 < cf5 < 5) and (0.4 < peak5 < 3.5) and (0.3 < bwid5 < 3.5): 
+                    if (1.2 < cf5 < 5) and (0.4 < peak5 < 3) and (0.25 < bwid5 < 3): 
                              #correlate between data and earthquake envelopes 
                         trc5s_e = obspy.signal.filter.envelope(trc5s.data) 
                         top_v,top,corell = corel(trs_s5,trc5s_e,shift)
@@ -1456,51 +1425,36 @@ for p in range(0,len(stream1)):
                             se=expt.second
                             ms=expt.microsecond/10000
                             near,ind=find_nearest(Events_today[:,0], rt)
-                            
-                            if abs(rt-near) > 60: #60s
-  
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][12]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            else:
-                                Events_today[ind][12]=1
-                            
+
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events[cor_count][16]="%1d" % Events_today[ind][10]
-                                        cor_events[cor_count][17]="%1d" % Events_today[ind][11]
-                                        cor_events[cor_count][18]="%1d" % Events_today[ind][12]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][18]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events[cor_count][15]="%1d" % Events_today[ind][9]
+                                            cor_events[cor_count][16]="%1d" % Events_today[ind][10]
+                                            cor_events[cor_count][17]="%1d" % Events_today[ind][11]
+                                            cor_events[cor_count][18]="%1d" % Events_today[ind][12]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][18]="%1d" % 1
 
                             else:
                                 cor_events[cor_count][0]= rt
@@ -1517,13 +1471,13 @@ for p in range(0,len(stream1)):
                                 cor_count += 1
                             
                             lastcorr=0
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step         #skip 60s to avoid double catch
 
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0
     else:
-        switch5=0
+        switch5s=0
                 
     #%% Station 6 scan  
     if trace6s.stats.npts > 201:
@@ -1542,6 +1496,7 @@ for p in range(0,len(stream1)):
         if switch6s ==1:
         
             begin = trace6s.stats.starttime
+            window=int(len(trs_s6)/100)
             add=0
             lastcorr=0 
             expt=0
@@ -1553,6 +1508,8 @@ for p in range(0,len(stream1)):
                     break
         
                 trc6s = trace6s.slice(starttime = view_start  , endtime= view_end)
+                if trc6s.stats.npts < 100:
+                    break
                 trc6s.detrend(type='linear')
                 trc6s.detrend(type='demean')
                 # only look for things above noise level 
@@ -1560,7 +1517,7 @@ for p in range(0,len(stream1)):
                 
                 if amp > av_amp6s:       
                     peak6,cf6,bwid6,bwid256 = freq_info(trc6s.data,trc6s.stats.starttime,trc6s.stats.endtime)      
-                    if (0.65 < cf6 < 2.75) and (0.2 < peak6 < 2.5) and (0.3 < bwid6 < 3): 
+                    if (1.2 < cf6 < 4.5) and (0.3 < peak6 < 3.5) and (0.3 < bwid6 < 5): 
                              #correlate between data and earthquake envelopes 
                         trc6s_e = obspy.signal.filter.envelope(trc6s.data) 
                         top_v,top,corell = corel(trs_s6,trc6s_e,shift)
@@ -1588,53 +1545,38 @@ for p in range(0,len(stream1)):
                             mi=expt.minute
                             se=expt.second
                             ms=expt.microsecond/10000
-                            
                             near,ind=find_nearest(Events_today[:,0], rt)
-                            if abs(rt-near) > 60: #60s
- 
-                                row=([rt,jd,yr,mo,da,hr,mi,se,ms,dl,x])
-                                
-                                todays_event.append(expt)
-                                Event_store.append(row)
-                                Events_today[find_count][0]=rt
-                                Events_today[find_count][1]=p
-                                Events_today[find_count][13]=1
-                                Events_today = np.lib.pad(Events_today, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                All_events.append(expt)
-                                find_count += 1
-                                Number_of_events_today += 1
-                            else:
-                                Events_today[ind][13]=1
-                            
+
                             if num_active[p] > 1:
-                                if abs(rt-near) <= 6:
-                                    near_cor,inde=find_nearest(cor_events[:,0], rt)
-                                    if abs(rt-near_cor) >  30:
-                                        cor_events[cor_count][0]=rt
-                                        cor_events[cor_count][1]="%1d" % p
-                                        cor_events[cor_count][2]="%1d" % yr
-                                        cor_events[cor_count][3]="%1d" % jd
-                                        cor_events[cor_count][4]="%1d" % hr
-                                        cor_events[cor_count][5]="%1d" % mi
-                                        cor_events[cor_count][6]="%1d" % se
-                                        cor_events[cor_count][7]="%1d" % ms
-                                        cor_events[cor_count][8]="%1d" % Events_today[ind][2]
-                                        cor_events[cor_count][9]="%1d" % Events_today[ind][3]
-                                        cor_events[cor_count][10]="%1d" % Events_today[ind][4]
-                                        cor_events[cor_count][11]="%1d" % Events_today[ind][5]
-                                        cor_events[cor_count][12]="%1d" % Events_today[ind][6]
-                                        cor_events[cor_count][13]="%1d" % Events_today[ind][7]
-                                        cor_events[cor_count][14]="%1d" % Events_today[ind][8]
-                                        cor_events[cor_count][15]="%1d" % Events_today[ind][9]
-                                        cor_events[cor_count][16]="%1d" % Events_today[ind][10]
-                                        cor_events[cor_count][17]="%1d" % Events_today[ind][11]
-                                        cor_events[cor_count][18]="%1d" % Events_today[ind][12]
-                                        cor_events[cor_count][19]="%1d" % Events_today[ind][13]
-                                        cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
-                                        correlated_today.append(expt)
-                                        cor_count += 1
-                                    else:
-                                        cor_events[inde][19]="%1d" % 1
+                                if abs(rt-near) <= 20:
+                                    if (Events_today[ind][2] == 1) or (Events_today[ind][4] == 1):
+                                        near_cor,inde=find_nearest(cor_events[:,0], rt)
+                                        if abs(rt-near_cor) >  60:
+                                            cor_events[cor_count][0]=rt
+                                            cor_events[cor_count][1]="%1d" % p
+                                            cor_events[cor_count][2]="%1d" % yr
+                                            cor_events[cor_count][3]="%1d" % jd
+                                            cor_events[cor_count][4]="%1d" % hr
+                                            cor_events[cor_count][5]="%1d" % mi
+                                            cor_events[cor_count][6]="%1d" % se
+                                            cor_events[cor_count][7]="%1d" % ms
+                                            cor_events[cor_count][8]="%1d" % Events_today[ind][2]
+                                            cor_events[cor_count][9]="%1d" % Events_today[ind][3]
+                                            cor_events[cor_count][10]="%1d" % Events_today[ind][4]
+                                            cor_events[cor_count][11]="%1d" % Events_today[ind][5]
+                                            cor_events[cor_count][12]="%1d" % Events_today[ind][6]
+                                            cor_events[cor_count][13]="%1d" % Events_today[ind][7]
+                                            cor_events[cor_count][14]="%1d" % Events_today[ind][8]
+                                            cor_events[cor_count][15]="%1d" % Events_today[ind][9]
+                                            cor_events[cor_count][16]="%1d" % Events_today[ind][10]
+                                            cor_events[cor_count][17]="%1d" % Events_today[ind][11]
+                                            cor_events[cor_count][18]="%1d" % Events_today[ind][12]
+                                            cor_events[cor_count][19]="%1d" % Events_today[ind][13]
+                                            cor_events = np.lib.pad(cor_events, ((0,1),(0,0)), 'constant', constant_values=(0))
+                                            correlated_today.append(expt)
+                                            cor_count += 1
+                                        else:
+                                            cor_events[inde][19]="%1d" % 1
 
                             else:
                                 cor_events[cor_count][0]=rt
@@ -1651,10 +1593,10 @@ for p in range(0,len(stream1)):
                                 
                                 cor_count += 1
                             lastcorr=0                                        
-                            add += 60-step               #skip 60s to avoid double catch
+                            add += window-step               #skip 60s to avoid double catch
     
                 else:
-                    add += 38
+                    add += window-step
                     lastcorr=0 
     else:
         switch6s=0
@@ -1678,7 +1620,7 @@ for p in range(0,len(stream1)):
 print("End of Scan")            
 col=0       
 cor_events=cor_events[np.argsort(cor_events[:,col])] 
-if cor_events[0][0]== 0.0:
+if cor_events[0,0]== 0.0:
     cor_events = np.delete(cor_events, (0), axis=0)       
 np.savetxt("/Users/william/Documents/scanner/all_stations/EXP_all_coincidence_V1.csv", cor_events,delimiter=",",header="Time_stamp,Day_number,Year,Day_of_year,Hour,Min,Sec,Milisec,LBO1,LB02,LB03,LB04,LB05,LB06,LSO1,LS02,LS03,LS04,LS05,LS06")
 
@@ -1734,35 +1676,35 @@ for r in range(0,len(cor_events)):
         tr1s_save.detrend(type='linear')
         data_stream.append(tr1s_save)         
     if cor_events[r][15]==1:
-        tr2sa=stream2[int(cor_events[r][1])]
+        tr2sa=stream2s[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
         tr2s_save = tr2sa.slice(starttime=dstart-15, endtime=dstart+45)
         tr2s_save.detrend(type='demean')
         tr2s_save.detrend(type='linear')
         data_stream.append(tr2s_save)
     if cor_events[r][16]==1:
-        tr3sa=stream3[int(cor_events[r][1])]
+        tr3sa=stream3s[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
         tr3s_save = tr3sa.slice(starttime=dstart-15, endtime=dstart+45)
         tr3s_save.detrend(type='demean')
         tr3s_save.detrend(type='linear')
         data_stream.append(tr3s_save)         
     if cor_events[r][17]==1:
-        tr4sa=stream4[int(cor_events[r][1])]
+        tr4sa=stream4s[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
         tr4s_save = tr4sa.slice(starttime=dstart-15, endtime=dstart+45)
         tr4s_save.detrend(type='demean')
         tr4s_save.detrend(type='linear')
         data_stream.append(tr4s_save)
     if cor_events[r][18]==1:
-        tr5sa=stream5[int(cor_events[r][1])]
+        tr5sa=stream5s[int(cor_events[r][1])]
         dstart=UTCDateTime(cor_events[r][0])
         tr5s_save = tr5sa.slice(starttime=dstart-15, endtime=dstart+45)
         tr5s_save.detrend(type='demean')
         tr5s_save.detrend(type='linear')
         data_stream.append(tr5s_save)
     if cor_events[r][19]==1:
-        tr6sa=stream6[int(cor_events[r][1])] 
+        tr6sa=stream6s[int(cor_events[r][1])] 
         dstart=UTCDateTime(cor_events[r][0])
         tr6s_save = tr6sa.slice(starttime=dstart-15, endtime=dstart+45)
         tr6s_save.detrend(type='demean')
