@@ -21,6 +21,7 @@ def get_all_stations(day):
     second1=0
     
     num=12
+    lb_num=6
 #%% LB01    
     try:  
         
@@ -65,6 +66,7 @@ def get_all_stations(day):
             st1.detrend(type='demean')
             st1[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
             num = num -1
+            lb_num = lb_num - 1
             
     except: # give 2 seconds of data instead
         
@@ -84,6 +86,7 @@ def get_all_stations(day):
         st1.detrend(type='demean')
         st1[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
         num = num -1
+        lb_num = lb_num - 1
 #%%    LB02
 
     try:  
@@ -128,6 +131,7 @@ def get_all_stations(day):
             st2.detrend(type='demean')
             st2[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
             num = num -1
+            lb_num = lb_num - 1
             
     except: # give 2 seconds of data instead
 
@@ -147,6 +151,7 @@ def get_all_stations(day):
         st2.detrend(type='demean')
         st2[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
         num = num -1
+        lb_num = lb_num - 1
         
 #%% LB03    
     try:  
@@ -192,6 +197,7 @@ def get_all_stations(day):
             st3.detrend(type='demean')
             st3[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
             num = num -1
+            lb_num = lb_num - 1
  
     except: # give 2 seconds of data instead
 
@@ -211,6 +217,7 @@ def get_all_stations(day):
         st3.detrend(type='demean')
         st3[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
         num = num -1
+        lb_num = lb_num - 1
         
 #%% LB04    
     try:  
@@ -256,6 +263,7 @@ def get_all_stations(day):
                 st4.detrend(type='demean')
                 st4[0].filter("bandpass", freqmin=0.1,freqmax=0.1)    
                 num = num -1
+                lb_num = lb_num - 1
     except: # give 2 seconds of data instead
         
         sta = 'LB01' # STATION LB01
@@ -274,7 +282,7 @@ def get_all_stations(day):
         st4.detrend(type='demean')
         st4[0].filter("bandpass", freqmin=0.1,freqmax=0.1)    
         num = num -1
-        
+        lb_num = lb_num - 1
 #%% LB05    
     try:  
      
@@ -319,6 +327,7 @@ def get_all_stations(day):
                 st5.detrend(type='demean')
                 st5[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
                 num = num -1
+                lb_num = lb_num - 1
             
     except: # give 2 seconds of data instead
         
@@ -338,7 +347,7 @@ def get_all_stations(day):
         st5.detrend(type='demean')
         st5[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
         num = num -1
-        
+        lb_num = lb_num - 1
 #%% LB06    
     try:  
      
@@ -383,7 +392,7 @@ def get_all_stations(day):
                 st6.detrend(type='demean')
                 st6[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
                 num = num -1
-
+                lb_num = lb_num - 1
     except: # give 2 seconds of blank data instead
         
         sta = 'LB01' # STATION LB01
@@ -402,7 +411,7 @@ def get_all_stations(day):
         st6.detrend(type='demean')
         st6[0].filter("bandpass", freqmin=0.1,freqmax=0.1)
         num = num -1
-
+        lb_num = lb_num - 1
 
 #%% LS01    
     try:  
@@ -557,7 +566,8 @@ def get_all_stations(day):
         sorted_data.sort()
         mid_dat= sorted_data[int(len(sorted_data)/2)]
         
-        if sum(abs(sts3[0].data)) < 10 or sts3[0].stats.npts < 7920000 or mid_dat < 0.1 :
+        
+        if sum(abs(sts3[0].data)) < 10 or sts3[0].stats.npts < 7920000 or mid_dat < 0.1 or sts3[0].stats.starttime.timestamp >  1442707190: 
         
             sta = 'LB01' # STATION LB01
             cha = 'HHZ' # CHANNEL - Vertical
@@ -789,4 +799,4 @@ def get_all_stations(day):
         
 
     #%% return all stations
-    return(st1,st2,st3,st4,st5,st6,sts1,sts2,sts3,sts4,sts5,sts6,num) #st7
+    return(st1,st2,st3,st4,st5,st6,sts1,sts2,sts3,sts4,sts5,sts6,num,lb_num) #st7
