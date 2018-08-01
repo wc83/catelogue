@@ -21,7 +21,7 @@ T1=time.clock()
 #%% read in explosions to remove
 ts=np.zeros(shape=(1,1))
 counter=0
-with open('/Users/william/Documents/scanner/all_stations/EXP_all_coincidence_V2g.csv') as f:
+with open('/Users/william/Documents/scanner/all_stations/EXP_all_coincidence_2_month_30.csv') as f:
     reader = csv.reader(f)
     next(reader, None)
     for row in reader:
@@ -36,24 +36,25 @@ fmin=2
 fmax=18
 #%%
 #file_sta = open('/Users/william/Documents/scanner/all_stations/full_eq_scan_v10e.txt','w')
-file_cor2 = open('/Users/william/Documents/scanner/all_stations/All_correlated2_eq_scan_v3g.txt','w')
-file_lb01= open('/Users/william/Documents/scanner/LB01/LB01_all_eq_scan_v3g.txt','w')
-file_lb02= open('/Users/william/Documents/scanner/LB02/LB02_all_eq_scan_v3g.txt','w')
-file_lb03= open('/Users/william/Documents/scanner/LB03/LB03_all_eq_scan_v3g.txt','w')
-file_lb04= open('/Users/william/Documents/scanner/LB04/LB04_all_eq_scan_v3g.txt','w')
-file_lb05= open('/Users/william/Documents/scanner/LB05/LB05_all_eq_scan_v3g.txt','w')
-file_lb06= open('/Users/william/Documents/scanner/LB06/LB06_all_eq_scan_v3g.txt','w')
-file_ls01= open('/Users/william/Documents/scanner/LS01/LS01_all_eq_scan_v3g.txt','w')
-file_ls02= open('/Users/william/Documents/scanner/LS02/LS02_all_eq_scan_v3g.txt','w')
-file_ls03= open('/Users/william/Documents/scanner/LS03/LS03_all_eq_scan_v3g.txt','w')
-file_ls04= open('/Users/william/Documents/scanner/LS04/LS04_all_eq_scan_v3g.txt','w')
-file_ls05= open('/Users/william/Documents/scanner/LS05/LS05_all_eq_scan_v3g.txt','w')
-file_ls06= open('/Users/william/Documents/scanner/LS06/LS06_all_eq_scan_v3g.txt','w')
+file_cor2 = open('/Users/william/Documents/scanner/all_stations/All_correlated2_eq_scan_month_30.txt','w')
+file_lb01= open('/Users/william/Documents/scanner/LB01/LB01_all_eq_scan_2_month_30.txt','w')
+file_lb02= open('/Users/william/Documents/scanner/LB02/LB02_all_eq_scan_2_month_30.txt','w')
+file_lb03= open('/Users/william/Documents/scanner/LB03/LB03_all_eq_scan_2_month_30.txt','w')
+file_lb04= open('/Users/william/Documents/scanner/LB04/LB04_all_eq_scan_2_month_30.txt','w')
+file_lb05= open('/Users/william/Documents/scanner/LB05/LB05_all_eq_scan_2_month_30.txt','w')
+file_lb06= open('/Users/william/Documents/scanner/LB06/LB06_all_eq_scan_2_month_30.txt','w')
+file_ls01= open('/Users/william/Documents/scanner/LS01/LS01_all_eq_scan_2_month_30.txt','w')
+file_ls02= open('/Users/william/Documents/scanner/LS02/LS02_all_eq_scan_2_month_30.txt','w')
+file_ls03= open('/Users/william/Documents/scanner/LS03/LS03_all_eq_scan_2_month_30.txt','w')
+file_ls04= open('/Users/william/Documents/scanner/LS04/LS04_all_eq_scan_2_month_30.txt','w')
+file_ls05= open('/Users/william/Documents/scanner/LS05/LS05_all_eq_scan_2_month_30.txt','w')
+file_ls06= open('/Users/william/Documents/scanner/LS06/LS06_all_eq_scan_2_month_30.txt','w')
 
 #%% Read in waveforms 
   
 trc2_e1,trc2_e2,trc2_e3,trc2_e4,trc2_e5,trc2_e6=stacked_LBz_eq(fmin,fmax) 
 trc2_s1,trc2_s2,trc2_s3,trc2_s4,trc2_s5,trc2_s6=stacked_LS_eq(fmin,fmax) 
+print('Reference Waveforms Read In')
 
 #%% open empty streams for each station
 
@@ -73,12 +74,13 @@ stream6s = Stream()
 #%% Read in Each station
 
 num_active=[]
-
-for x in range(500,505):
+lb_num_active=[]
+for x in range(870,900):
     
     seis1,seis2,seis3,seis4,seis5,seis6,seis1s,seis2s,seis3s,seis4s,seis5s,seis6s,num,lb_num=get_all_stations(x)    
     num_active.append(num)
-
+    lb_num_active.append(lb_num)
+    
     tr1=seis1[0]
     tr2=seis2[0]
     tr3=seis3[0]
@@ -106,7 +108,8 @@ for x in range(500,505):
     stream6s.append(tr6s)
    
 print('files read in') 
-
+print('num_active =',num_active)
+print('lb_num_active =',lb_num_active)
 #%%
 sr = seis1[0].stats.sampling_rate
 nsta=int(1*sr)                                      #1
@@ -189,6 +192,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off1)):
         start=trace1.stats.starttime
+        trace1.detrend(type='linear')
         trace1.detrend(type='demean')
         trace1.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset1=start+(on_off1[x,0]/sr) 
@@ -251,6 +255,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off2)):
         start2=trace2.stats.starttime
+        trace2.detrend(type='linear')
         trace2.detrend(type='demean')
         trace2.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset2=start2+(on_off2[x,0]/sr) 
@@ -339,6 +344,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off3)):
         start3=trace3.stats.starttime
+        trace3.detrend(type='linear')
         trace3.detrend(type='demean')
         trace3.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset3=start3+(on_off3[x,0]/sr) 
@@ -428,6 +434,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off4)):
         start4=trace4.stats.starttime
+        trace4.detrend(type='linear')
         trace4.detrend(type='demean')
         trace4.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset4=start4+(on_off4[x,0]/sr) 
@@ -520,6 +527,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off5)):
         start5=trace5.stats.starttime
+        trace5.detrend(type='linear')
         trace5.detrend(type='demean')
         trace5.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset5=start5+(on_off5[x,0]/sr) 
@@ -613,6 +621,7 @@ for t in range(0,len(stream1),1):
                         
     for x in range(0,len(on_off6)):
         start6=trace6.stats.starttime
+        trace6.detrend(type='linear')
         trace6.detrend(type='demean')
         trace6.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset6=start6+(on_off6[x,0]/sr) 
@@ -708,6 +717,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off1s)):
         start=trace1s.stats.starttime
+        trace1s.detrend(type='linear')
         trace1s.detrend(type='demean')
         trace1s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset1s=start+(on_off1s[x,0]/sr) 
@@ -803,6 +813,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off2s)):
         start2s=trace2s.stats.starttime
+        trace2s.detrend(type='linear')
         trace2s.detrend(type='demean')
         trace2s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset2s=start2s+(on_off2s[x,0]/sr) 
@@ -898,6 +909,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off3s)):
         start3s=trace3s.stats.starttime
+        trace3s.detrend(type='linear')
         trace3s.detrend(type='demean')
         trace3s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset3s=start3s+(on_off3s[x,0]/sr) 
@@ -994,6 +1006,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off4s)):
         start4s=trace4s.stats.starttime
+        trace4s.detrend(type='linear')
         trace4s.detrend(type='demean')
         trace4s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset4s=start4s+(on_off4s[x,0]/sr) 
@@ -1092,6 +1105,7 @@ for t in range(0,len(stream1),1):
 
     for x in range(0,len(on_off5s)):
         start5s=trace5s.stats.starttime
+        trace5s.detrend(type='linear')
         trace5s.detrend(type='demean')
         trace5s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset5s=start5s+(on_off5s[x,0]/sr) 
@@ -1191,6 +1205,7 @@ for t in range(0,len(stream1),1):
                         
     for x in range(0,len(on_off6s)):
         start6s=trace6s.stats.starttime
+        trace6s.detrend(type='linear')
         trace6s.detrend(type='demean')
         trace6s.filter("bandpass", freqmin=fmin,freqmax=fmax)
         onset6s=start6s+(on_off6s[x,0]/sr) 
@@ -1297,12 +1312,13 @@ for t in range(0,len(stream1),1):
         file_cor2.write("\n")  
             
 
-#%%             
+#%%   
+print('Saving Data')          
 col=0       
 corr_event2=corr_event2[np.argsort(corr_event2[:,col])] 
 if corr_event2[0][0]== 0.0:
     corr_event2 = np.delete(corr_event2, (0), axis=0)       
-np.savetxt("/Users/william/Documents/scanner/all_stations/EQ_all_coincidence_V3g.csv", corr_event2,delimiter=",",header="Time_stamp,Event_length,Day_number,Year,Day_of_year,Hour,Min,Sec,Milisec,LBO1,LB02,LB03,LB04,LB05,LB06,LSO1,LS02,LS03,LS04,LS05,LS06")
+np.savetxt("/Users/william/Documents/scanner/all_stations/EQ_all_coincidence_2_month_30.csv", corr_event2,delimiter=",",header="Time_stamp,Event_length,Day_number,Year,Day_of_year,Hour,Min,Sec,Milisec,LBO1,LB02,LB03,LB04,LB05,LB06,LSO1,LS02,LS03,LS04,LS05,LS06")
 
 data_stream = Stream()
 for r in range(0,len(corr_event2)):
@@ -1368,8 +1384,9 @@ for r in range(0,len(corr_event2)):
         tr2s_save = tr2sa.slice(starttime=dstart - 10, endtime=dstart+corr_event2[r][1]+20)
         tr2s_save.detrend(type='demean')
         tr2s_save.detrend(type='linear')
-        if type(tr2s_save[0]) == np.float64:
-            data_stream.append(tr2s_save)    
+        if tr2s_save.stats.npts > 1:
+            if type(tr2s_save[0]) == np.float64 :
+                data_stream.append(tr2s_save)    
     if corr_event2[r][17]==1:
         tr3sa=stream3s[int(corr_event2[r][2])]
         dstart=UTCDateTime(corr_event2[r][0])
@@ -1404,7 +1421,7 @@ for r in range(0,len(corr_event2)):
             data_stream.append(tr6s_save)
 
 if len(data_stream) > 0:   
-    data_stream.write('/Users/william/Documents/scanner/output_data/EQ_all_data_stream_v3g.mseed', format='MSEED')         
+    data_stream.write('/Users/william/Documents/scanner/output_data/EQ_all_data_stream_2_month_30.mseed', format='MSEED')         
 
         
 #file_sta.close()
@@ -1427,6 +1444,4 @@ T2=time.clock()
 elapsed= T2-T1
 print('Time taken:', elapsed)       
 
-        
 
-    
